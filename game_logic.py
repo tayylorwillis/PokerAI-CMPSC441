@@ -31,6 +31,8 @@ J:11
 10:10...
 """
 
+import random
+
 #class for card objects
 class Card:
     def __init__(self):
@@ -40,12 +42,38 @@ class Card:
 
 #generate a random card
 def gen_card():
-    
+    card = Card()
+    card.rank = random.randint(2, 14)
+    suit_int = random.randint(1, 4)
+    if (suit_int == 1):
+        card.suit = "hearts"
+    if (suit_int == 2):
+        card.suit = "diamonds"
+    if (suit_int == 3):
+        card.suit = "spades"
+    if (suit_int == 4):
+        card.suit = "clubs"
+    return card
+
 
 #hand generation func
 def create_hands():
-    i = 2
-    while (i>0):
+    dealt_cards = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10]
+    hand1 = [0, 0, 0, 0, 0]
+    hand2 = [0, 0, 0, 0, 0]
+    i = 1
+    j = -1
+    for c in dealt_cards:
+        c = gen_card()
+    for i in 10:
+        j = 0
+        while j < i:
+            if (i.suit == j.suit and i.rank == j.rank):
+                i = gen_card()
+
+        i = i + 1
+
+
 
 
 
@@ -54,7 +82,3 @@ def hand_type(hand):
     if
 
 
-
-
-#hand generation func
-def create_hands():
