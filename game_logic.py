@@ -32,53 +32,86 @@ J:11
 """
 
 import random
+import array
 
 #class for card objects
 class Card:
     def __init__(self):
         self.suit = 0
         self.rank = 0
+        self.id = 0
         #self.is_ace = false
 
 #generate a random card
 def gen_card():
     card = Card()
-    card.rank = random.randint(2, 14)
-    suit_int = random.randint(1, 4)
-    if (suit_int == 1):
+    card_num = random.randint(1, 52)
+    card.id = card_num
+    card.rank = (card_num % 13) + 2
+    if ( card_num >= 1 and card_num <= 13):
         card.suit = "hearts"
-    if (suit_int == 2):
+    if ( card_num >= 14 and card_num <= 26):
         card.suit = "diamonds"
-    if (suit_int == 3):
+    if ( card_num >= 27 and card_num <= 39):
         card.suit = "spades"
-    if (suit_int == 4):
+    if ( card_num >= 40 and card_num <= 52):
         card.suit = "clubs"
+    '''
+    if (card.rank == 14):
+        card.is_ace = true
+    '''
     return card
 
 
 #hand generation func
 def create_hands():
-    dealt_cards = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10]
-    hand1 = [0, 0, 0, 0, 0]
-    hand2 = [0, 0, 0, 0, 0]
-    i = 1
-    j = -1
-    for c in dealt_cards:
+    deck = list(range(1, 53))
+    dealt_cards = []
+    hand1 = []
+    hand2 = []
+    i = 0
+    while (i < 5):
         c = gen_card()
-    for i in 10:
-        j = 0
-        while j < i:
-            if (i.suit == j.suit and i.rank == j.rank):
-                i = gen_card()
-
+        while (c.id in dealt_cards):
+            c = gen_card()
+        deck.remove(c.id)
+        dealt_cards.append(c.id)
+        hand1.append(c)
         i = i + 1
 
+    i = 0
+    while (i < 5):
+        c = gen_card()
+        while (c.id in dealt_cards):
+            c = gen_card()
+        deck.remove(c.id)
+        dealt_cards.append(c.id)
+        hand2.append(c)
+        i = i + 1
+    
+    return hand1, hand2
+
+def print_hand(hand):
+    print(hand[0].suit, hand[0].rank, ", ", hand[1].suit, hand[1].rank, ", ", hand[2].suit, hand[2].rank,
+           ", ", hand[3].suit, hand[3].rank, ", ", hand[4].suit, hand[4].rank)
 
 
-
-
+'''
 #hand type detection func
 def hand_type(hand):
     if
+'''
+
+'''
+c1 = gen_card()
+print(c1.rank)
+print(c1.suit)
+
+hand1, hand2 = create_hands()
+print_hand(hand1)
+print_hand(hand2)
+'''
+
+
 
 
