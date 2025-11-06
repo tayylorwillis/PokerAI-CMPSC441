@@ -122,15 +122,13 @@ def print_hand(hand):
     print(hand[0].suit, hand[0].rank, ", ", hand[1].suit, hand[1].rank, ", ", hand[2].suit, hand[2].rank,
            ", ", hand[3].suit, hand[3].rank, ", ", hand[4].suit, hand[4].rank)
 
-
-# had to make full house detection its own func due to discrepencies between how pairs are handled
-#hand type detection func
 def hand_type(hand):
     ranks = [hand[0].rank, hand[1].rank, hand[2].rank, hand[3].rank, hand[4].rank]
     suits = [hand[0].suit, hand[1].suit, hand[2].suit, hand[3].suit, hand[4].suit]
     max_rank = max(ranks)
     is_flush = False
     is_straight = False
+
     has_pair = False
     pair_rank = 0
     has_three = False
@@ -139,7 +137,6 @@ def hand_type(hand):
     second_pair_rank = 0
     has_four = False
     four_rank = 0
-    three_cards = []
 
     #check for straight
     if (max_rank - 1 in ranks and max_rank - 2 in ranks and max_rank - 3 in ranks and 
@@ -150,103 +147,33 @@ def hand_type(hand):
         suits[0] == suits[4]):
         is_flush = True
 
-    #check to see if pair is present, tracking what rank the pair is
-    #if pair found, check to see if a three can also be made from that pair
-    #if three found, check for four
-    #if one pair found, look for second
-    #if three found, reset two pair in case three detected as two pair
-    ###NOT DONE: prevent false full house, get rid of pair that is part of three
-    if (ranks[0] == ranks[1] or ranks[0] == ranks[2] or ranks[0] == ranks[3] or ranks[0] == ranks[4]):
-        has_pair = True
-        pair_rank = ranks[0]
-        #check for three
-        if (has_pair and ranks[0] == ranks[1] == ranks[2] or ranks[0] == ranks[1] == ranks[3] or 
-            ranks[0] == ranks[1] == ranks[4] or ranks[0] == ranks[2] == ranks[3] or 
-            ranks[0] == ranks[2] == ranks[4] or ranks[0] == ranks[3] == ranks[4]):
-            has_pair = False
+    rank_nums = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    for c in hand:
+        rank_nums[c.rank - 1] = rank_nums[c.rank - 1] + 1
+
+    i = 1
+    for n in rank_nums:
+        if (n == 4):
+            has_four = True
+            four_rank = i
+        i = i + 1
+
+    i = 1
+    for n in rank_nums:
+        if (n == 3):
             has_three = True
-            pair_rank = 0
-            three_rank = ranks[0]
-            #add cards to list of cards that make up three, to prevent false full houses
-            three_cards.append(hand[0])
-            if (ranks[0] == ranks[1]):
-                three_cards.append(hand[1])
-            if (ranks[0] == ranks[2]):
-                three_cards.append(hand[2])
-            if (ranks[0] == ranks[3]):
-                three_cards.append(hand[3])
-            if (ranks[0] == ranks[4]):
-                three_cards.append(hand[4])
-            #check for four
-            if (has_three and ranks[0] == ranks[1] == ranks[2] == ranks[3] or
-                ranks[0] == ranks[1] == ranks[2] == ranks[4] or
-                ranks[0] == ranks[1] == ranks[3] == ranks[4] or
-                ranks[0] == ranks[2] == ranks[3] == ranks[4]):
-                has_three = False
-                three_rank = 0
-                has_four = True
-                four_rank = ranks[0]
-    #make sure cards used for pair are not in three
-    if (hand[1] not in three_cards and (ranks[1] == ranks[2] or ranks[1] == ranks[3] or ranks[1] == ranks[4])):
-        #if one pair already found, make first pair be second pair and new pair is first pair
-        if (has_pair == True):
-            has_two_pair = True
-            second_pair_rank = pair_rank
-        has_pair = True
-        pair_rank = ranks[1]
-        #check for three
-        if (has_pair and ranks[1] == ranks[2] == ranks[3] or ranks[1] == ranks[2] == ranks[4] or 
-            ranks[1] == ranks[3] == ranks[4]):
-            has_pair = False
-            has_three = True
-            pair_rank = 0
-            three_rank = ranks[1]
-            #add cards to list of cards that make up three, to prevent false full houses
-            three_cards.append(hand[1])
-            if (ranks[1] == ranks[2]):
-                three_cards.append(hand[2])
-            if (ranks[1] == ranks[3]):
-                three_cards.append(hand[3])
-            if (ranks[1] == ranks[4]):
-                three_cards.append(hand[4])
-            #reset two pair info in case three has triggered two pair
-            has_two_pair = False
-            second_pair_rank = 0
-            #check for four
-            if (has_three and ranks[1] == ranks[2] == ranks[3] == ranks[4]):
-                has_three = False
-                three_rank = 0
-                has_four = True
-                four_rank = ranks[1]
-    #make sure cards used for pair are not in three
-    if (hand[2] not in three_cards and (ranks[2] == ranks[3] or ranks[2] == ranks[4])):
-        #if one pair already found, make first pair be second pair and new pair is first pair
-        if (has_pair == True):
-            has_two_pair = True
-            second_pair_rank = pair_rank
-        has_pair = True
-        pair_rank = ranks[2]
-        #check for three
-        if (has_pair and ranks[2] == ranks[3] == ranks[4]):
-            has_pair = False
-            has_three = True
-            pair_rank = 0
-            three_rank = ranks[2]
-            #add cards to list of cards that make up three, to prevent false full houses
-            three_cards.append(hand[2])
-            three_cards.append(hand[3])
-            three_cards.append(hand[4])
-            #reset two pair info in case three has triggered two pair
-            has_two_pair = False
-            second_pair_rank = 0
-    #make sure cards used for pair are not in three
-    if (hand[3] not in three_cards and hand[4] not in three_cards and (ranks[3] == ranks[4])):
-        #if one pair already found, make first pair be second pair and new pair is first pair
-        if (has_pair == True):
-            has_two_pair = True
-            second_pair_rank = pair_rank
-        has_pair = True
-        pair_rank = ranks[3]
+            three_rank = i
+        i = i + 1
+
+    i = 1
+    for n in rank_nums:
+        if (n == 2 and has_pair == True):
+            has_second_pair = True
+            second_pair_rank = i
+        if (n == 2 and has_pair == False):
+            has_pair = True
+            pair_rank = i
+        i = i + 1
 
     # return hand type and relevant val in case of tied hand type and 
     # needing to compare ranks to determine winner
@@ -259,10 +186,9 @@ def hand_type(hand):
     if (has_four):
         return "Four of a Kind", four_rank
 
-    is_house, house_three_rank = has_house(hand)
 ######COME BACK
-    if (is_house):
-        return "Full House", house_three_rank
+    if (has_pair and has_three):
+        return "Full House", three_rank
 
     if (is_flush):
         return "Flush", max_rank
@@ -280,81 +206,6 @@ def hand_type(hand):
         return "One Pair", pair_rank
 
     return "High Card", max_rank
-
-def has_house(hand):
-    ranks = [hand[0].rank, hand[1].rank, hand[2].rank, hand[3].rank, hand[4].rank]
-    has_pair = False
-    has_three = False
-    three_rank = 0
-    three_cards = []
-    #check to see if pair is present
-    #if pair found, check to see if a three can also be made from that pair
-    ###NOT DONE: prevent false full house, get rid of pair that is part of three
-    if (ranks[0] == ranks[1] or ranks[0] == ranks[2] or ranks[0] == ranks[3] or ranks[0] == ranks[4]):
-        has_pair = True
-        #check for three
-        if (has_pair and ranks[0] == ranks[1] == ranks[2] or ranks[0] == ranks[1] == ranks[3] or 
-            ranks[0] == ranks[1] == ranks[4] or ranks[0] == ranks[2] == ranks[3] or 
-            ranks[0] == ranks[2] == ranks[4] or ranks[0] == ranks[3] == ranks[4]):
-            has_pair = False
-            has_three = True
-            three_rank = ranks[0]
-            #add cards to list of cards that make up three, to prevent false full houses
-            three_cards.append(hand[0])
-            if (ranks[0] == ranks[1]):
-                three_cards.append(hand[1])
-            if (ranks[0] == ranks[2]):
-                three_cards.append(hand[2])
-            if (ranks[0] == ranks[3]):
-                three_cards.append(hand[3])
-            if (ranks[0] == ranks[4]):
-                three_cards.append(hand[4])
-    #make sure cards used for pair are not in three
-    if (hand[1] not in three_cards and (ranks[1] == ranks[2] or ranks[1] == ranks[3] or ranks[1] == ranks[4])):
-        #check for three
-        if (has_pair and ranks[1] == ranks[2] == ranks[3] or ranks[1] == ranks[2] == ranks[4] or 
-            ranks[1] == ranks[3] == ranks[4]):
-            has_pair = False
-            has_three = True
-            three_rank = ranks[1]
-            #add cards to list of cards that make up three, to prevent false full houses
-            three_cards.append(hand[1])
-            if (ranks[1] == ranks[2]):
-                three_cards.append(hand[2])
-            if (ranks[1] == ranks[3]):
-                three_cards.append(hand[3])
-            if (ranks[1] == ranks[4]):
-                three_cards.append(hand[4])
-        # this section moved to after three check to prevent making has_pair false due to having 3,
-        # in case that both true for house
-        #if one pair already found, make first pair be second pair and new pair is first pair
-        has_pair = True
-    #make sure cards used for pair are not in three
-    if (hand[2] not in three_cards and (ranks[2] == ranks[3] or ranks[2] == ranks[4])):
-        #check for three
-        if (has_pair and ranks[2] == ranks[3] == ranks[4]):
-            has_pair = False
-            has_three = True
-            three_rank = ranks[2]
-            #add cards to list of cards that make up three, to prevent false full houses
-            three_cards.append(hand[2])
-            three_cards.append(hand[3])
-            three_cards.append(hand[4])
-        #if one pair already found, make first pair be second pair and new pair is first pair
-        # this section moved to after three check to prevent making has_pair false due to having 3,
-        # in case that both true for house
-        has_pair = True
-    #make sure cards used for pair are not in three
-    if (hand[3] not in three_cards and hand[4] not in three_cards and (ranks[3] == ranks[4])):
-        #if one pair already found, make first pair be second pair and new pair is first pair
-        has_pair = True
-
-    if (has_three and has_pair):
-        return True, three_rank
-    else:
-        return False, 0
-
-    
 
 
 ##test four
@@ -376,7 +227,7 @@ hand = [create_card(2), create_card(1), create_card(14), create_card(27), create
 print(hand_type(hand))
 '''
 ##test three
-
+'''
 #three, 4th 5th irr
 hand = [create_card(1), create_card(14), create_card(27), create_card(3), create_card(2)]
 print(hand_type(hand))
@@ -440,7 +291,7 @@ print(hand_type(hand))
 #house, 1th 2th pair
 hand = [create_card(2), create_card(15), create_card(1), create_card(14), create_card(27)]
 print(hand_type(hand))
-
+'''
 
 
 
