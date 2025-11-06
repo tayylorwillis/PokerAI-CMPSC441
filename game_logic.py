@@ -168,7 +168,7 @@ def hand_type(hand):
     i = 1
     for n in rank_nums:
         if (n == 2 and has_pair == True):
-            has_second_pair = True
+            has_two_pair = True
             second_pair_rank = i
         if (n == 2 and has_pair == False):
             has_pair = True
@@ -186,7 +186,6 @@ def hand_type(hand):
     if (has_four):
         return "Four of a Kind", four_rank
 
-######COME BACK
     if (has_pair and has_three):
         return "Full House", three_rank
 
@@ -293,5 +292,22 @@ hand = [create_card(2), create_card(15), create_card(1), create_card(14), create
 print(hand_type(hand))
 '''
 
-
+#pair, 1th 4th pair
+hand = [create_card(2), create_card(1), create_card(3), create_card(15), create_card(4)]
+print(hand_type(hand))
+#two pair, 1th 3th pair, 2nd, 5th pair
+hand = [create_card(2), create_card(1), create_card(15), create_card(3), create_card(27)]
+print(hand_type(hand))
+#royal flush
+hand = [create_card(14), create_card(13), create_card(12), create_card(11), create_card(10)]
+print(hand_type(hand))
+#straight flush
+hand = [create_card(2), create_card(3), create_card(4), create_card(5), create_card(6)]
+print(hand_type(hand))
+#flush
+hand = [create_card(2), create_card(11), create_card(10), create_card(7), create_card(4)]
+print(hand_type(hand))
+#straight
+hand = [create_card(2), create_card(16), create_card(30), create_card(5), create_card(6)]
+print(hand_type(hand))
 
