@@ -1,14 +1,102 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lets Go Kambling</title>
-    <link rel="stylesheet" href="/static/style.css">
-  </head>
-  <body>
-    <main>
-      <h1>Welcome to Lets Go Kambling</h1>
-    </main>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Let's Go Kambling!</title>
+<style>
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: rgb(110,0,20); /* Risky Red */
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 200%;
+    background-attachment: fixed; 
+    color: white; 
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    overflow: hidden; /* prevents scrolling */
+}
+
+header {
+    color: goldenrod;
+    font-size: xx-large;
+    text-align: center;
+}
+
+main {
+    padding: 2em;
+    text-align: center;
+    backdrop-filter: blur(3px); 
+    background-color: rgba(0, 0, 0, 0.3);
+    margin: 2em auto;
+    width: 50%;
+    height: 50%;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+footer {
+    color: white;
+    padding: 1em;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+/* Hand card bottom-right */
+img.hand-card {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    width: 200px;
+}
+
+/* Four texts bottom-left */
+div.bottom-left-texts {
+    position: fixed;
+    bottom: 40px;
+    left: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: white;
+    font-size: 18px;
+    z-index: 1000;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Let's Go Kambling!</h1>
+</header>
+
+<main>
+    <p>Pot: ####</p>
+    <p>Image of coins goes in the middle</p>
+
+
+    buttons go on bottom into 3 sections, for raise, hold, fold 
+</main>
+
+<!-- Hand card in bottom-right -->
+<img src="https://i.pinimg.com/originals/ce/ac/76/ceac7651e78ef135370a8a236580201a.png" class="hand-card" alt="Hand Card">
+
+<!-- Four texts in bottom-left -->
+<div class="bottom-left-texts">
+    <div>Total:</div>
+    <div>Round:</div>
+    <div></div>
+</div>
+
+
+</body>
 </html>
