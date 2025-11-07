@@ -3,12 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Lets Go Kambling</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <!-- <link rel="stylesheet" href="/static/style.css"> -->
   </head>
   <body>
     <main>
       <h1>Welcome to Lets Go Kambling</h1>
+      <div class="deck">
+        {% for rank, suit in deck %}
+          <img src="{{ url_for('cards', rank=rank, suit=suit) }}" alt="{{ rank }}{{ suit }}" class="card">
+        {% endfor %}
+      </div>
     </main>
   </body>
 </html>
