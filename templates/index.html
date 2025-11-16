@@ -33,21 +33,52 @@ main {
     text-align: center;
     backdrop-filter: blur(3px); 
     background-color: rgba(0, 0, 0, 0.3);
-    margin: 2em auto;
-    width: 50%;
-    height: 50%;
+    margin: 2em auto 1em auto;
+    width: 45%;
+    height: 45%;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    position: relative; /* Needed so the buttons can anchor to bottom */
 }
 
-footer {
-    color: white;
-    padding: 1em;
-    text-align: center;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+/* Card slots under main */
+.card-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: -10px;
+}
+
+.card-row img {
+    width: 175px;
+    height: auto;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    border: 2px solid goldenrod;
+}
+
+/* Bottom action buttons */
+.action-buttons {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+}
+
+.action-buttons button {
+    padding: 10px 24px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: rgb(235, 171, 11);
+    color: black;
+    font-weight: bold;
+    min-width: 225px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
 }
 
 /* Hand card bottom-right */
@@ -66,10 +97,109 @@ div.bottom-left-texts {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    color: white;
+    color: rgb(235, 171, 11);
     font-size: 18px;
     z-index: 1000;
 }
+
+
+
+/* Mini cards middle-right */
+.mini-card-column {
+    position: fixed;
+    top: 35%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    z-index: 800;
+}
+
+.mini-card-column img {
+    width: 60px;   
+    height: auto;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+}
+
+.opstats-circle {
+    position: fixed;
+    left: 17.25px;           
+    top: 37%;             
+    transform: translateY(-50%);
+    width: calc(5 * 60px + 4 * 12px); 
+    height: 40px;       
+    border-top-left-radius: 50% 100%;
+    border-top-right-radius: 50% 100%;
+    border: 3px solid goldenrod;
+    background-color: rgba(0,0,0,.7); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;    
+    z-index: 900;          
+}
+
+.opstats-text {
+    display:  flex;
+    flex-direction: row;
+    text-align: center;
+    gap: 20px;
+    color: goldenrod;
+    font-weight: bold;
+    font-size: 16px;
+    pointer-events: auto;
+}
+
+
+/* Mini cards middle-left */
+.mini-card-column2 {
+    position: fixed;
+    top: 35%;
+    left: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    z-index: 800;
+}
+
+.mini-card-column2 img {
+    width: 60px;   /* mini size */
+    height: auto;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+}
+
+.opstats-circle2 {
+    position: fixed;
+    right: 17.25px;           
+    top: 37%;             
+    transform: translateY(-50%);
+    width: calc(5 * 60px + 4 * 12px); 
+    height: 40px;       
+    border-top-left-radius: 50% 100%;
+    border-top-right-radius: 50% 100%;
+    border: 3px solid goldenrod;
+    background-color: rgba(0,0,0,.7); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;    
+    z-index: 900;          
+}
+
+.opstats-text2 {
+    display:  flex;
+    flex-direction: row;
+    text-align: center;
+    gap: 20px;
+    color: goldenrod;
+    font-weight: bold;
+    font-size: 16px;
+    pointer-events: auto;
+}
+
+
 
 </style>
 </head>
@@ -82,10 +212,24 @@ div.bottom-left-texts {
 <main>
     <p>Pot: ####</p>
     <p>Image of coins goes in the middle</p>
+    Alex Remember to add the fold button to show when they fold
 
-
-    buttons go on bottom into 3 sections, for raise, hold, fold 
+    <!-- Bottom buttons -->
+    <div class="action-buttons">
+        <button id="raiseButton">Raise</button>
+        <button id="holdButton">Hold</button>
+        <button id="foldButton">Fold</button>
+    </div>
 </main>
+
+<!-- Five card image slots -->
+<div class="card-row">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Card 1">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Card 2">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Card 3">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Card 4">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Card 5">
+</div>
 
 <!-- Hand card in bottom-right -->
 <img src="https://i.pinimg.com/originals/ce/ac/76/ceac7651e78ef135370a8a236580201a.png" class="hand-card" alt="Hand Card">
@@ -97,6 +241,37 @@ div.bottom-left-texts {
     <div></div>
 </div>
 
+<!-- Semi-circle for wagers -->
+<div class="opstats-circle2">
+    <div class="opstats-text2">
+        <div>Total: ####</div>
+        <div>Bet: ####</div>
+    </div>
+</div>
+<!-- Mini card column on middle-right -->
+<div class="mini-card-column">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 1">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 2">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 3">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 4">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 5">
+</div>
+
+<!-- Semi-circle for wagers -->
+<div class="opstats-circle">
+    <div class="opstats-text">
+        <div>Total: ####</div>
+        <div>Bet: ####</div>
+    </div>
+</div>
+<!-- Mini card column on middle-left -->
+<div class="mini-card-column2">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 1">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 2">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 3">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 4">
+    <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 5">
+</div>
 
 </body>
 </html>
