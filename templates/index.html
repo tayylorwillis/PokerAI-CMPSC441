@@ -26,6 +26,7 @@ header {
     color: goldenrod;
     font-size: xx-large;
     text-align: center;
+    text-shadow: 0 0 10px rgb(5, 4, 1);
 }
 
 main {
@@ -33,8 +34,9 @@ main {
     text-align: center;
     backdrop-filter: blur(3px); 
     background-color: rgba(0, 0, 0, 0.3);
+    border: 3px solid goldenrod;
     margin: 2em auto 1em auto;
-    width: 45%;
+    width: 47.35%;
     height: 45%;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
@@ -81,12 +83,12 @@ main {
     box-shadow: 0 3px 8px rgba(0,0,0,0.4);
 }
 
-/* Hand card bottom-right */
+/* card options bottom-right */
 img.hand-card {
     position: fixed;
-    bottom: 40px;
-    right: 40px;
-    width: 200px;
+    bottom: 20px;
+    right: 20px;
+    width: 375px;
 }
 
 /* Four texts bottom-left */
@@ -117,7 +119,8 @@ div.bottom-left-texts {
 }
 
 .mini-card-column img {
-    width: 60px;   
+    width: 65px;   
+    max-width: 4vw;
     height: auto;
     box-shadow: 0 3px 8px rgba(0,0,0,0.5);
 }
@@ -125,9 +128,9 @@ div.bottom-left-texts {
 .opstats-circle {
     position: fixed;
     left: 17.25px;           
-    top: 37%;             
+    top: 37.3%;             
     transform: translateY(-50%);
-    width: calc(5 * 60px + 4 * 12px); 
+    width: 19.4%; 
     height: 40px;       
     border-top-left-radius: 50% 100%;
     border-top-right-radius: 50% 100%;
@@ -165,7 +168,7 @@ div.bottom-left-texts {
 }
 
 .mini-card-column2 img {
-    width: 60px;   /* mini size */
+    width: 65px;   /* mini size */
     height: auto;
     box-shadow: 0 3px 8px rgba(0,0,0,0.5);
 }
@@ -173,9 +176,9 @@ div.bottom-left-texts {
 .opstats-circle2 {
     position: fixed;
     right: 17.25px;           
-    top: 37%;             
+    top: 37.3%;             
     transform: translateY(-50%);
-    width: calc(5 * 60px + 4 * 12px); 
+    width: 19.4%; 
     height: 40px;       
     border-top-left-radius: 50% 100%;
     border-top-right-radius: 50% 100%;
@@ -200,6 +203,73 @@ div.bottom-left-texts {
 }
 
 
+/* raise box */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 10px 20px;
+    gap: 15px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.overlay-content {
+    background-color: rgb(25, 25, 25);
+    border: 3px solid goldenrod;
+    padding: 25px 35px;
+    gap: 50%;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    min-width: 20%; 
+    min-height: 15%;
+    gap:5%;
+}
+
+.overlay-content input#raiseInput {
+    width: 80%; 
+    font-size: 22px;
+    text-align: center;
+    border-radius: 6px;
+    border: 2px solid goldenrod;
+    margin-bottom: 2%;
+    gap: 5%;
+}
+
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: center;
+    gap: 1%;       
+    margin-bottom: 2%;
+}
+
+button.confirm-button {
+    padding: 12px 25px;
+    align-items: center;
+    font-size: 18px;
+    border-radius: 8px;
+    border: none;
+    background-color: goldenrod;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 2%;
+}
+
+
 
 </style>
 </head>
@@ -210,7 +280,8 @@ div.bottom-left-texts {
 </header>
 
 <main>
-    <p>Pot: ####</p>
+    <p style = "font-size: 32px;color: goldenrod;font-weight: bold;margin-top: -15px;">
+        Pot: ####</p>
     <p>Image of coins goes in the middle</p>
     Alex Remember to add the fold button to show when they fold
 
@@ -238,6 +309,8 @@ div.bottom-left-texts {
 <div class="bottom-left-texts">
     <div>Total:</div>
     <div>Round:</div>
+    <div>Wins:</div>
+    <div>Losses:</div>
     <div></div>
 </div>
 
@@ -273,5 +346,28 @@ div.bottom-left-texts {
     <img src="https://media.istockphoto.com/id/179536312/photo/vintage-playing-card-isolated.jpg?s=1024x1024&w=is&k=20&c=tA-mD7js2TbBbxHznptZQd8gc8HypYsR2UJrX6EJ8jI=" alt="Mini 5">
 </div>
 
+<div id="overlay" class="hidden">
+    <div class="overlay-content">
+        <p>Enter your Raise Amount:</p>
+        <div class="raise-container">
+        <input type="number" id="raiseInput" value="0" min="0" />
+    <div class="buttons">
+        <button class="adjust" data-value="-50">-50</button>
+        <button class="adjust" data-value="-10">-10</button>
+        <button class="adjust" data-value="-5">-5</button>
+        <button class="adjust" data-value="-1">-1</button>
+        <button class="adjust" data-value="reset">0</button>
+        <button class="adjust" data-value="1">+1</button>
+        <button class="adjust" data-value="5">+5</button>
+        <button class="adjust" data-value="10">+10</button>
+        <button class="adjust" data-value="50">+50</button>
+    </div>
+</div>
+        <button id="confirmRaise">Confirm</button>
+    </div>
+</div>
+
+
+<script src="script.js"></script>
 </body>
 </html>
