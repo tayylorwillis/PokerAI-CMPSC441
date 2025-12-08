@@ -207,91 +207,6 @@ def hand_type(hand):
     return "High Card", max_rank
 
 
-##test four
-'''
-#four of a kind, 5th spot irrelevant
-hand = [create_card(1), create_card(14), create_card(27), create_card(40), create_card(2)]
-print(hand_type(hand))
-#four of a kind, 4th spot irrelevant
-hand = [create_card(1), create_card(14), create_card(27), create_card(2), create_card(40)]
-print(hand_type(hand))
-#four of a kind, 3th spot irrelevant
-hand = [create_card(1), create_card(14), create_card(2), create_card(27), create_card(40)]
-print(hand_type(hand))
-#four of a kind, 2th spot irrelevant
-hand = [create_card(1), create_card(2), create_card(14), create_card(27), create_card(40)]
-print(hand_type(hand))
-#four of a kind, 1th spot irrelevant
-hand = [create_card(2), create_card(1), create_card(14), create_card(27), create_card(40)]
-print(hand_type(hand))
-'''
-##test three
-'''
-#three, 4th 5th irr
-hand = [create_card(1), create_card(14), create_card(27), create_card(3), create_card(2)]
-print(hand_type(hand))
-#three, 3th 5th irr
-hand = [create_card(1), create_card(14), create_card(2), create_card(27), create_card(3)]
-print(hand_type(hand))
-#three, 3th 4th irr
-hand = [create_card(1), create_card(14), create_card(2), create_card(3), create_card(27)]
-print(hand_type(hand))
-#three, 2th 5th irr
-hand = [create_card(1), create_card(2), create_card(14), create_card(27), create_card(3)]
-print(hand_type(hand))
-#three, 2th 4th irr
-hand = [create_card(1), create_card(2), create_card(14), create_card(3), create_card(27)]
-print(hand_type(hand))
-#three, 2th 3th irr
-hand = [create_card(1), create_card(2), create_card(3), create_card(14), create_card(27)]
-print(hand_type(hand))
-#three, 1th 5th irr
-hand = [create_card(2), create_card(1), create_card(14), create_card(27), create_card(3)]
-print(hand_type(hand))
-#three, 1th 4th irr -----CURR FULL HOUSE
-hand = [create_card(2), create_card(1), create_card(14), create_card(3), create_card(27)]
-print(hand_type(hand))
-#three, 1th 3th irr -----CURR FULL HOUSE
-hand = [create_card(2), create_card(1), create_card(3), create_card(14), create_card(27)]
-print(hand_type(hand))
-#three, 1th 2th irr
-hand = [create_card(2), create_card(3), create_card(1), create_card(14), create_card(27)]
-print(hand_type(hand))
-
-##test FULL HOUSE
-
-#house, 4th 5th pair
-hand = [create_card(1), create_card(14), create_card(27), create_card(15), create_card(2)]
-print(hand_type(hand))
-#house, 3th 5th pair
-hand = [create_card(1), create_card(14), create_card(2), create_card(27), create_card(15)]
-print(hand_type(hand))
-#house, 3th 4th pair
-hand = [create_card(1), create_card(14), create_card(2), create_card(15), create_card(27)]
-print(hand_type(hand))
-#house, 2th 5th pair
-hand = [create_card(1), create_card(2), create_card(14), create_card(27), create_card(15)]
-print(hand_type(hand))
-#house, 2th 4th pair
-hand = [create_card(1), create_card(2), create_card(14), create_card(15), create_card(27)]
-print(hand_type(hand))
-#house, 2th 3th pair
-hand = [create_card(1), create_card(2), create_card(15), create_card(14), create_card(27)]
-print(hand_type(hand))
-#house, 1th 5th pair
-hand = [create_card(2), create_card(1), create_card(14), create_card(27), create_card(15)]
-print(hand_type(hand))
-#house, 1th 4th pair
-hand = [create_card(2), create_card(1), create_card(14), create_card(15), create_card(27)]
-print(hand_type(hand))
-#house, 1th 3th pair
-hand = [create_card(2), create_card(1), create_card(15), create_card(14), create_card(27)]
-print(hand_type(hand))
-#house, 1th 2th pair
-hand = [create_card(2), create_card(15), create_card(1), create_card(14), create_card(27)]
-print(hand_type(hand))
-'''
-
 #pair, 1th 4th pair
 hand = [create_card(2), create_card(1), create_card(3), create_card(15), create_card(4)]
 print(hand_type(hand))
@@ -310,4 +225,5 @@ print(hand_type(hand))
 #straight
 hand = [create_card(2), create_card(16), create_card(30), create_card(5), create_card(6)]
 print(hand_type(hand))
+
 
