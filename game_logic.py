@@ -4,10 +4,28 @@ K:13
 Q:12
 J:11
 10:10...
+
+add pot tracking, as well as call/raise/fold
 """
 
 import random
-import array
+#import array
+
+class Pot:
+    def __init__(self, pot_sum1 = 0, agent_chips1 = 10000, player_chips1 = 10000):
+        self.pot_sum = pot_sum1
+        self.last_raise = 0
+        self.agent_chips = agent_chips1
+        self.player_chips = player_chips1
+
+    @staticmethod
+    def my_raise(num):
+        
+
+
+
+
+        
 
 #class for card objects
 class Card:

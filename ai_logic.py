@@ -340,7 +340,21 @@ def win_prob(hand):
             prob = (1302540 - (108545*12))/2598960
             return prob
         
+def take_turn(hand, bets):
+    prob = win_prob(hand)
+    
+
+
+
+
+
+'''
 deck1 = Deck()
 hand = deck1.deal_hand()
+print(HandEvaluator.evaluate_hand(hand))
 print(win_prob(hand))
 print_hand(hand)
+'''
+'''
+bets is list of all opponent bets
+'''
