@@ -33,161 +33,150 @@ def win_prob(hand):
         if (rank == 6):
             prob = (2598960-32)/2598960
             return prob
+        if (rank == 5):
+            prob = (2598960-36)/2598960
+            return prob
         
     if (type == "Four of a Kind"):
         if (rank == 14): #A
-            prob = (2598960)/2598960
+            prob = (2598960-40-48*0)/2598960
             return prob
         if (rank == 13): #K
-            prob = (2598924-156)/2598960
+            prob = (2598960-40-48*1)/2598960
             return prob
         if (rank == 12): #Q
-            prob = (2598924-(156*2))/2598960
+            prob = (2598960-40-48*2)/2598960
             return prob
         if (rank == 11): #J
-            prob = (2598924-(156*3))/2598960
+            prob = (2598960-40-48*3)/2598960
             return prob
         if (rank == 10):
-            prob = (2598924-(156*4))/2598960
+            prob = (2598960-40-48*4)/2598960
             return prob
         if (rank == 9):
-            prob = (2598924-(156*5))/2598960
+            prob = (2598960-40-48*5)/2598960
             return prob
         if (rank == 8):
-            prob = (2598924-(156*6))/2598960
+            prob = (2598960-40-48*6)/2598960
             return prob
         if (rank == 7):
-            prob = (2598924-(156*7))/2598960
+            prob = (2598960-40-48*7)/2598960
             return prob
         if (rank == 6):
-            prob = (2598924-(156*8))/2598960
+            prob = (2598960-40-48*8)/2598960
             return prob
         if (rank == 5):
-            prob = (2598924-(156*9))/2598960
+            prob = (2598960-40-48*9)/2598960
             return prob
         if (rank == 4):
-            prob = (2598924-(156*10))/2598960
+            prob = (2598960-40-48*10)/2598960
             return prob
         if (rank == 3):
-            prob = (2598924-(156*11))/2598960
+            prob = (2598960-40-48*11)/2598960
             return prob
         if (rank == 2):
-            prob = (2598924 -(156*12))/2598960
+            prob = (2598960-40-48*12)/2598960
             return prob
         
     
     if (type == "Full House"):
         if (rank == 13): #A
-            prob = (2596896 -(936*0))/2598960
+            prob = (2598344 -(312*1))/2598960
             return prob
         if (rank == 13): #K
-            prob = (2596896 -(936*1))/2598960
+            prob = (2598344 -(312*2))/2598960
             return prob
         if (rank == 12): #Q
-            prob = (2596896 -(936*2))/2598960
+            prob = (2598344 -(312*3))/2598960
             return prob
         if (rank == 11): #J
-            prob = (2596896 -(936*3))/2598960
+            prob = (2598344 -(312*4))/2598960
             return prob
         if (rank == 10):
-            prob = (2596896 -(936*4))/2598960
+            prob = (2598344 -(312*5))/2598960
             return prob
         if (rank == 9):
-            prob = (2596896 -(936*5))/2598960
+            prob = (2598344 -(312*6))/2598960
             return prob
         if (rank == 8):
-            prob = (2596896 -(936*6))/2598960
+            prob = (2598344 -(312*7))/2598960
             return prob
         if (rank == 7):
-            prob = (2596896 -(936*7))/2598960
+            prob = (2598344 -(312*8))/2598960
             return prob
         if (rank == 6):
-            prob = (2596896 -(936*8))/2598960
+            prob = (2598344 -(312*9))/2598960
             return prob
         if (rank == 5):
-            prob = (2596896 -(936*9))/2598960
+            prob = (2598344 -(312*10))/2598960
             return prob
         if (rank == 4):
-            prob = (2596896 -(936*10))/2598960
+            prob = (2598344 -(312*11))/2598960
             return prob
         if (rank == 3):
-            prob = (2596896 -(936*11))/2598960
+            prob = (2598344 -(312*12))/2598960
             return prob
-        if (rank == 2):
-            prob = (2596896 -(936*12))/2598960
-            return prob
-    
+    #FIX
     if (type == "Flush"):
         if (rank == 13): #A
-            prob = (2584728 -(1277*0))/2598960
+            prob = (2594600 -(572*0))/2598960
             return prob
         if (rank == 13): #K
-            prob = (2584728 -(1277*1))/2598960
+            prob = (2594600 -(572*1))/2598960
             return prob
         if (rank == 12): #Q
-            prob = (2584728 -(1277*2))/2598960
+            prob = (2594600 -(572*2))/2598960
             return prob
         if (rank == 11): #J
-            prob = (2584728 -(1277*3))/2598960
+            prob = (2594600 -(572*3))/2598960
             return prob
         if (rank == 10):
-            prob = (2584728 -(1277*4))/2598960
+            prob = (2594600 -(572*4))/2598960
             return prob
         if (rank == 9):
-            prob = (2584728 -(1277*5))/2598960
+            prob = (2594600 -(572*5))/2598960
             return prob
         if (rank == 8):
-            prob = (2584728 -(1277*6))/2598960
+            prob = (2594600 -(572*6))/2598960
             return prob
         if (rank == 7):
-            prob = (2584728 -(1277*7))/2598960
+            prob = (2594600 -(572*7))/2598960
             return prob
         if (rank == 6):
-            prob = (2584728 -(1277*8))/2598960
+            prob = (2594600 -(572*8))/2598960
             return prob
-        if (rank == 5):
-            prob = (2584728 -(1277*9))/2598960
-            return prob
-        if (rank == 4):
-            prob = (2584728 -(1277*10))/2598960
-            return prob
-        if (rank == 3):
-            prob = (2584728 -(1277*11))/2598960
-            return prob
-        if (rank == 2):
-            prob = (2584728 -(1277*12))/2598960
-            return prob
+        
     
     if (type == "Straight"):
         if (rank == 13): #A
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*1))/2598960
             return prob
         if (rank == 13): #K
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*2))/2598960
             return prob
         if (rank == 12): #Q
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*3))/2598960
             return prob
         if (rank == 11): #J
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*4))/2598960
             return prob
         if (rank == 10):
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*5))/2598960
             return prob
         if (rank == 9):
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*6))/2598960
             return prob
         if (rank == 8):
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*7))/2598960
             return prob
         if (rank == 7):
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*8))/2598960
             return prob
         if (rank == 6):
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*9))/2598960
             return prob
         if (rank == 5):
-            prob = (2589444 - (1020*0))/2598960
+            prob = (2589444 - (1020*10))/2598960
             return prob
         
     
