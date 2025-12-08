@@ -1,5 +1,7 @@
 from game_logic import gen_card
 from hand_evaluator import HandEvaluator
+from deck import Deck
+from hand_evaluator import print_hand
 
 #t.e. 2598960 total possible poker hands
 
@@ -77,8 +79,7 @@ def win_prob(hand):
         if (rank == 2):
             prob = (2598960-40-48*12)/2598960
             return prob
-        
-    
+           
     if (type == "Full House"):
         if (rank == 13): #A
             prob = (2598344 -(312*1))/2598960
@@ -116,7 +117,7 @@ def win_prob(hand):
         if (rank == 3):
             prob = (2598344 -(312*12))/2598960
             return prob
-    #FIX
+    
     if (type == "Flush"):
         if (rank == 13): #A
             prob = (2594600 -(572*0))/2598960
@@ -339,4 +340,7 @@ def win_prob(hand):
             prob = (1302540 - (108545*12))/2598960
             return prob
         
-    
+deck1 = Deck()
+hand = deck1.deal_hand()
+print(win_prob(hand))
+print_hand(hand)
