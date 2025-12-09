@@ -1,360 +1,236 @@
-from game_logic import gen_card
-from hand_evaluator import HandEvaluator
-from deck import Deck
-from hand_evaluator import print_hand
+"""
+Ollama-based poker bot implementation
+"""
 
-#t.e. 2598960 total possible poker hands
+import json
+import requests
+import re
+from typing import Tuple, Optional, Dict
+from ai_player import BaseAIPlayer
 
-def win_prob(hand):
-    type, rank = HandEvaluator.evaluate_hand(hand)
-    if (type == "Royal Flush"):
-        return 1
-    
-    if (type == "Straight Flush"):
-        if (rank == 13): #K
-            prob = (2598960-4)/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (2598960-8)/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (2598960-12)/2598960
-            return prob
-        if (rank == 10):
-            prob = (2598960-16)/2598960
-            return prob
-        if (rank == 9):
-            prob = (2598960-20)/2598960
-            return prob
-        if (rank == 8):
-            prob = (2598960-24)/2598960
-            return prob
-        if (rank == 7):
-            prob = (2598960-28)/2598960
-            return prob
-        if (rank == 6):
-            prob = (2598960-32)/2598960
-            return prob
-        if (rank == 5):
-            prob = (2598960-36)/2598960
-            return prob
-        
-    if (type == "Four of a Kind"):
-        if (rank == 14): #A
-            prob = (2598960-40-48*0)/2598960
-            return prob
-        if (rank == 13): #K
-            prob = (2598960-40-48*1)/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (2598960-40-48*2)/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (2598960-40-48*3)/2598960
-            return prob
-        if (rank == 10):
-            prob = (2598960-40-48*4)/2598960
-            return prob
-        if (rank == 9):
-            prob = (2598960-40-48*5)/2598960
-            return prob
-        if (rank == 8):
-            prob = (2598960-40-48*6)/2598960
-            return prob
-        if (rank == 7):
-            prob = (2598960-40-48*7)/2598960
-            return prob
-        if (rank == 6):
-            prob = (2598960-40-48*8)/2598960
-            return prob
-        if (rank == 5):
-            prob = (2598960-40-48*9)/2598960
-            return prob
-        if (rank == 4):
-            prob = (2598960-40-48*10)/2598960
-            return prob
-        if (rank == 3):
-            prob = (2598960-40-48*11)/2598960
-            return prob
-        if (rank == 2):
-            prob = (2598960-40-48*12)/2598960
-            return prob
-           
-    if (type == "Full House"):
-        if (rank == 13): #A
-            prob = (2598344 -(312*1))/2598960
-            return prob
-        if (rank == 13): #K
-            prob = (2598344 -(312*2))/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (2598344 -(312*3))/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (2598344 -(312*4))/2598960
-            return prob
-        if (rank == 10):
-            prob = (2598344 -(312*5))/2598960
-            return prob
-        if (rank == 9):
-            prob = (2598344 -(312*6))/2598960
-            return prob
-        if (rank == 8):
-            prob = (2598344 -(312*7))/2598960
-            return prob
-        if (rank == 7):
-            prob = (2598344 -(312*8))/2598960
-            return prob
-        if (rank == 6):
-            prob = (2598344 -(312*9))/2598960
-            return prob
-        if (rank == 5):
-            prob = (2598344 -(312*10))/2598960
-            return prob
-        if (rank == 4):
-            prob = (2598344 -(312*11))/2598960
-            return prob
-        if (rank == 3):
-            prob = (2598344 -(312*12))/2598960
-            return prob
-    
-    if (type == "Flush"):
-        if (rank == 13): #A
-            prob = (2594600 -(572*0))/2598960
-            return prob
-        if (rank == 13): #K
-            prob = (2594600 -(572*1))/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (2594600 -(572*2))/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (2594600 -(572*3))/2598960
-            return prob
-        if (rank == 10):
-            prob = (2594600 -(572*4))/2598960
-            return prob
-        if (rank == 9):
-            prob = (2594600 -(572*5))/2598960
-            return prob
-        if (rank == 8):
-            prob = (2594600 -(572*6))/2598960
-            return prob
-        if (rank == 7):
-            prob = (2594600 -(572*7))/2598960
-            return prob
-        if (rank == 6):
-            prob = (2594600 -(572*8))/2598960
-            return prob
-        
-    
-    if (type == "Straight"):
-        if (rank == 13): #A
-            prob = (2589444 - (1020*1))/2598960
-            return prob
-        if (rank == 13): #K
-            prob = (2589444 - (1020*2))/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (2589444 - (1020*3))/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (2589444 - (1020*4))/2598960
-            return prob
-        if (rank == 10):
-            prob = (2589444 - (1020*5))/2598960
-            return prob
-        if (rank == 9):
-            prob = (2589444 - (1020*6))/2598960
-            return prob
-        if (rank == 8):
-            prob = (2589444 - (1020*7))/2598960
-            return prob
-        if (rank == 7):
-            prob = (2589444 - (1020*8))/2598960
-            return prob
-        if (rank == 6):
-            prob = (2589444 - (1020*9))/2598960
-            return prob
-        if (rank == 5):
-            prob = (2589444 - (1020*10))/2598960
-            return prob
-        
-    
-    if (type == "Three of a Kind"):
-        if (rank == 14): #A
-            prob = (2579244 - (4224*1))/2598960
-            return prob
-        if (rank == 13): #K
-            prob = (2579244 - (4224*2))/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (2579244 - (4224*3))/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (2579244 - (4224*4))/2598960
-            return prob
-        if (rank == 10):
-            prob = (2579244 - (4224*5))/2598960
-            return prob
-        if (rank == 9):
-            prob = (2579244 - (4224*6))/2598960
-            return prob
-        if (rank == 8):
-            prob = (2579244 - (4224*7))/2598960
-            return prob
-        if (rank == 7):
-            prob = (2579244 - (4224*8))/2598960
-            return prob
-        if (rank == 6):
-            prob = (2579244 - (4224*9))/2598960
-            return prob
-        if (rank == 5):
-            prob = (2579244 - (4224*10))/2598960
-            return prob
-        if (rank == 4):
-            prob = (2579244 - (4224*11))/2598960
-            return prob
-        if (rank == 3):
-            prob = (2579244 - (4224*12))/2598960
-            return prob
-        if (rank == 2):
-            prob = (2579244 - (4224*13))/2598960
-            return prob
-    
-    if (type == "Two Pair"):
-        if (rank == 14): #A
-            prob = (2524332 - (10296*1))/2598960
-            return prob
-        if (rank == 13): #K
-            prob = (2524332 - (10296*2))/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (2524332 - (10296*3))/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (2524332 - (10296*4))/2598960
-            return prob
-        if (rank == 10):
-            prob = (2524332 - (10296*5))/2598960
-            return prob
-        if (rank == 9):
-            prob = (2524332 - (10296*6))/2598960
-            return prob
-        if (rank == 8):
-            prob = (2524332 - (10296*7))/2598960
-            return prob
-        if (rank == 7):
-            prob = (2524332 - (10296*8))/2598960
-            return prob
-        if (rank == 6):
-            prob = (2524332 - (10296*9))/2598960
-            return prob
-        if (rank == 5):
-            prob = (2524332 - (10296*10))/2598960
-            return prob
-        if (rank == 4):
-            prob = (2524332 - (10296*11))/2598960
-            return prob
-        if (rank == 3):
-            prob = (2524332 - (10296*12))/2598960
-            return prob
-        
-    
-    if (type == "One Pair"):
-        if (rank == 14): #A
-            prob = (2400780 - (84480*1))/2598960
-            return prob
-        if (rank == 13): #K
-            prob = (2400780 - (84480*2))/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (2400780 - (84480*3))/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (2400780 - (84480*4))/2598960
-            return prob
-        if (rank == 10):
-            prob = (2400780 - (84480*5))/2598960
-            return prob
-        if (rank == 9):
-            prob = (2400780 - (84480*6))/2598960
-            return prob
-        if (rank == 8):
-            prob = (2400780 - (84480*7))/2598960
-            return prob
-        if (rank == 7):
-            prob = (2400780 - (84480*8))/2598960
-            return prob
-        if (rank == 6):
-            prob = (2400780 - (84480*9))/2598960
-            return prob
-        if (rank == 5):
-            prob = (2400780 - (84480*10))/2598960
-            return prob
-        if (rank == 4):
-            prob = (2400780 - (84480*11))/2598960
-            return prob
-        if (rank == 3):
-            prob = (2400780 - (84480*12))/2598960
-            return prob
-        if (rank == 2):
-            prob = (2400780 - (84480*13))/2598960
-            return prob
-    
-    if (type == "High Card"):
-        if (rank == 14): #A
-            prob = (1302540 - (108545*1))/2598960
-            return prob
-        if (rank == 13): #K
-            prob = (1302540 - (108545*2))/2598960
-            return prob
-        if (rank == 12): #Q
-            prob = (1302540 - (108545*3))/2598960
-            return prob
-        if (rank == 11): #J
-            prob = (1302540 - (108545*4))/2598960
-            return prob
-        if (rank == 10):
-            prob = (1302540 - (108545*5))/2598960
-            return prob
-        if (rank == 9):
-            prob = (1302540 - (108545*6))/2598960
-            return prob
-        if (rank == 8):
-            prob = (1302540 - (108545*7))/2598960
-            return prob
-        if (rank == 7):
-            prob = (1302540 - (108545*8))/2598960
-            return prob
-        if (rank == 6):
-            prob = (1302540 - (108545*9))/2598960
-            return prob
-        if (rank == 5):
-            prob = (1302540 - (108545*10))/2598960
-            return prob
-        if (rank == 4):
-            prob = (1302540 - (108545*11))/2598960
-            return prob
-        if (rank == 3):
-            prob = (1302540 - (108545*12))/2598960
-            return prob
-        
-def take_turn(hand, bets):
-    prob = win_prob(hand)
-    
+model = "qwen2.5"
+
+class OllamaBot(BaseAIPlayer):
+    """
+    Poker player powered by local LLM via Ollama.
+    No API costs, runs completely offline.
+    """
+
+    SYSTEM_PROMPTS = {
+        "add these"
+    }
+
+    def __init__(self, name: str, money: int = 1000,
+                 model: str = model,
+                 personality: str = "balanced",
+                 ollama_url: str = "http://localhost:11434"):
+        """
+        Initialize Ollama-powered bot.
+
+        Args:
+            name: Bot name
+            money: Starting money
+            model: Ollama model to use (e.g., "qwen2.5")
+            personality: "conservative", "balanced", or "aggressive"
+            ollama_url: Ollama API URL
+        """
+        super().__init__(name, money)
+        self.model = model
+        self.personality = personality
+        self.ollama_url = ollama_url
+        self.system_prompt = self.SYSTEM_PROMPTS[personality]
+        self.decision_history = []
+
+        # Check if Ollama is running
+        self._check_ollama_connection()
+
+    def _check_ollama_connection(self):
+        """Verify Ollama is running and model is available."""
+        try:
+            response = requests.get(f"{self.ollama_url}/api/tags", timeout=5)
+            if response.status_code == 200:
+                models = response.json().get('models', [])
+                model_names = [m['name'] for m in models]
+
+                if not any(self.model in name for name in model_names):
+                    print(f"Model '{self.model}' not found. Available models:")
+                    for name in model_names:
+                        print(f"    • {name}")
+                    print(f"\nTo download: ollama pull {self.model}")
+        except Exception as e:
+            print(f"Cannot connect to Ollama: {e}")
+            print("Make sure Ollama is running: https://ollama.ai")
+
+    def decide_action(self, game_state, player) -> Tuple[str, Optional[int]]:
+        """
+        Make a decision using local LLM via Ollama.
+
+        Args:
+            game_state: Current GameState object
+            player: Current Player object
+
+        Returns:
+            Tuple of (action, amount) where action is 'call', 'raise', or 'fold'
+        """
+        # TODO: implement
 
 
+    def _prepare_context(self, game_state, player) -> Dict:
+        """Prepare game context for LLM."""
+        # TODO: implement
 
 
+    def _call_ollama(self, prompt: str) -> str:
+        """Call Ollama API."""
+        try:
+            response = requests.post(
+                f"{self.ollama_url}/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.7,  # Moderate creativity
+                        "num_predict": 150,  # Limit response length
+                        "top_p": 0.9,
+                        "top_k": 40,
+                        "stop": ["\n\n", "QUESTION:", "SYSTEM:", "USER:"]
+                    }
+                },
+                timeout=30
+            )
 
-'''
-deck1 = Deck()
-hand = deck1.deal_hand()
-print(HandEvaluator.evaluate_hand(hand))
-print(win_prob(hand))
-print_hand(hand)
-'''
-'''
-bets is list of all opponent bets
-'''
+            if response.status_code != 200:
+                raise Exception(f"Ollama error: {response.status_code}")
+
+            result = response.json()
+            return result['response'].strip()
+
+        except requests.exceptions.Timeout:
+            raise Exception("Ollama request timed out")
+        except Exception as e:
+            raise Exception(f"Ollama call failed: {e}")
+
+    def _parse_response(self, response_text: str) -> Dict:
+        """Parse LLM response to extract JSON decision."""
+        response_text = self._clean_response(response_text)
+
+        try:
+            decision = json.loads(response_text)
+        except json.JSONDecodeError:
+            json_match = re.search(r'\{[^}]+\}', response_text)
+            if json_match:
+                try:
+                    decision = json.loads(json_match.group(0))
+                except:
+                    raise ValueError("Could not parse JSON from response")
+            else:
+                raise ValueError("No JSON found in response")
+
+        # Validate required fields
+        if 'action' not in decision:
+            raise ValueError("Response missing 'action' field")
+
+        if decision['action'] not in ['call', 'raise', 'fold']:
+            raise ValueError(f"Invalid action: {decision['action']}")
+
+        return decision
+
+    def _clean_response(self, text: str) -> str:
+        """Clean LLM response to extract JSON."""
+        # Remove markdown code blocks
+        text = re.sub(r'```json\s*\n?', '', text, flags=re.IGNORECASE)
+        text = re.sub(r'```\s*\n?', '', text)
+
+        # Remove common prefixes
+        prefixes = [
+            r'JSON RESPONSE:\s*',
+            r'Response:\s*',
+            r'Answer:\s*',
+            r'Here is (?:the|my) (?:decision|response):\s*',
+        ]
+        for prefix in prefixes:
+            text = re.sub(prefix, '', text, flags=re.IGNORECASE)
+
+        json_match = re.search(r'(\{[^}]+\})', text, re.DOTALL)
+        if json_match:
+            text = json_match.group(1)
+
+        return text.strip()
+
+    def _validate_decision(self, decision: Dict, game_state, player) -> Tuple[str, Optional[int]]:
+        """Validate and adjust LLM decision to be legal."""
+        # TODO: implement
+
+    def _fallback_decision(self, game_state, player) -> Tuple[str, Optional[int]]:
+        """Simple rule-based fallback when LLM fails."""
+        # TODO: implement
+
+    def _estimate_win_probability(self, hand_ranking: int) -> float:
+        """Rough estimate of win probability based on hand ranking."""
+        probabilities = {
+            10: 0.999,  # Royal Flush
+            9: 0.95,  # Straight Flush
+            8: 0.90,  # Four of a Kind
+            7: 0.85,  # Full House
+            6: 0.75,  # Flush
+            5: 0.65,  # Straight
+            4: 0.55,  # Three of a Kind
+            3: 0.45,  # Two Pair
+            2: 0.35,  # One Pair
+            1: 0.20   # High Card
+        }
+        return probabilities.get(hand_ranking, 0.5)
+
+    def _log_decision(self, player, context: Dict, decision: Dict):
+        """Log decision for analysis."""
+        # TODO: implement
+
+    def get_strategy_name(self) -> str:
+        """Get strategy description."""
+        return f"Ollama Bot ({self.model}, {self.personality})"
+
+    def get_decision_history(self):
+        """Get history of decisions for analysis."""
+        return self.decision_history
+
+
+def check_ollama_status(ollama_url: str = "http://localhost:11434"):
+    """
+    Check if Ollama is running and show available models.
+
+    Returns:
+        tuple: (is_running: bool, available_models: list)
+    """
+    try:
+        response = requests.get(f"{ollama_url}/api/tags", timeout=5)
+        if response.status_code == 200:
+            models = response.json().get('models', [])
+            model_names = [m['name'] for m in models]
+            return True, model_names
+        return False, []
+    except:
+        return False, []
+
+
+def create_ollama_bot(name: str, money: int = 1000,
+                      personality: str = "balanced",
+                      model: str = model) -> OllamaBot:
+    """
+    Create an Ollama bot with sensible defaults.
+
+    Args:
+        name: Bot name
+        money: Starting money
+        personality: "conservative", "balanced", or "aggressive"
+        model: Ollama model (default: qwen2.5 for good balance)
+
+    Returns:
+        OllamaBot instance
+    """
+    return OllamaBot(
+        name=name,
+        money=money,
+        model=model,
+        personality=personality
+    )
