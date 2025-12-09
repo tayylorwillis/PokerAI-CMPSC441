@@ -1,22 +1,25 @@
 const raiseButton = document.getElementById('raiseButton');
 const holdButton = document.getElementById('holdButton');
 const foldButton = document.getElementById('foldButton');
+const newHandButton = document.getElementById('newHandButton');
 const overlay = document.getElementById('overlay');
 const confirmRaise = document.getElementById('confirmRaise');
 const raiseInput = document.getElementById('raiseInput');
 
 const communityContainer = document.getElementById('communityCards');
-const leftMiniContainer = document.getElementById('leftMini');
+const playerHandContainer = document.getElementById('playerHandCards');
 const rightMiniContainer = document.getElementById('rightMini');
-const handCardSlot = document.getElementById('handCardSlot');
-
-const cardBack = 'https://i.pinimg.com/originals/ce/ac/76/ceac7651e78ef135370a8a236580201a.png';
 
 function createCardImg(card, size = 'md') {
     const img = document.createElement('img');
     img.className = `card-img ${size === 'sm' ? 'sm' : ''}`.trim();
-    img.src = card?.image || cardBack;
-    img.alt = `${card?.rank ?? ''}${card?.suit ?? ''}`;
+    if (card?.hidden) {
+        img.src = 'https://www.deckofcardsapi.com/static/img/back.png';
+        img.alt = 'Hidden card';
+    } else {
+        img.src = card?.image || '';
+        img.alt = `${card?.rank ?? ''}${card?.suit ?? ''}`;
+    }
     img.loading = 'lazy';
     return img;
 }
@@ -27,11 +30,7 @@ function renderCards(container, cards, size = 'md') {
     cards.forEach(card => container.appendChild(createCardImg(card, size)));
 }
 
-function setHandCard(card) {
-    if (!handCardSlot || !card) return;
-    handCardSlot.src = card.image || cardBack;
-    handCardSlot.alt = `${card.rank ?? ''}${card.suit ?? ''}`;
-}
+
 
 function updateText(id, value) {
     const el = document.getElementById(id);
@@ -50,20 +49,24 @@ async function loadGame() {
 
 function renderState(state) {
     if (!state) return;
-    renderCards(communityContainer, state.board, 'md');
-    renderCards(leftMiniContainer, state.player.hole, 'sm');
+    renderCards(communityContainer, state.player.hole, 'md');
     renderCards(rightMiniContainer, state.opponent.hole, 'sm');
-    setHandCard(state.player.hole?.[0] || {});
 
     updateText('potValue', state.pot ?? '0');
     updateText('statTotal', state.player.money ?? '');
     updateText('statRound', state.player.current_bet ?? '');
     updateText('statWins', state.player.best?.hand ?? '');
-    updateText('statLosses', state.opponent.best?.hand ?? '');
+    updateText('rightTotal', state.opponent.money ?? '');
+    updateText('rightBet', state.opponent.current_bet ?? '');
 
+    const holdStatus = state.player.held ? ' (HELD)' : '';
+    const oppHoldStatus = state.opponent.held ? ' (HELD)' : '';
     if (state.status === 'finished' && state.result) {
         const resultText = state.result === 'player' ? 'You win!' : state.result === 'opponent' ? 'Opponent wins' : 'Tie';
         updateText('potValue', `${state.pot} • ${resultText}`);
+        newHandButton?.classList.remove('hidden');
+    } else {
+        newHandButton?.classList.add('hidden');
     }
 }
 
@@ -81,6 +84,7 @@ const hideOverlay = () => overlay?.classList.add('hidden');
 raiseButton?.addEventListener('click', showOverlay);
 holdButton?.addEventListener('click', () => sendAction('hold'));
 foldButton?.addEventListener('click', () => sendAction('fold'));
+newHandButton?.addEventListener('click', () => loadGame());
 
 confirmRaise?.addEventListener('click', () => {
     const amount = Number(raiseInput?.value ?? 0);
@@ -109,5 +113,4 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') hideOverlay();
 });
 
-// Kick off
 loadGame();
