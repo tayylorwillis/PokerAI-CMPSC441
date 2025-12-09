@@ -6,7 +6,7 @@ class Player:
         self.current_bet = 0
         self.is_folded = False
         self.is_bot = is_bot
-        self.is_active = True  # Player is still in the game (has money)
+        self.is_active = True  # Player is still in the game
 
     def receive_hand(self, hand):
         """Assign a hand to the player"""
