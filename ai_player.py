@@ -5,6 +5,7 @@ Base AI player - Abstract base class for AI implementations
 
 from abc import ABC, abstractmethod
 from typing import Tuple, Optional, List
+from hand_evaluator import win_prob
 
 
 class BaseAIPlayer(ABC):
@@ -182,6 +183,7 @@ class BaseAIPlayer(ABC):
             'name': name
         }
 
+    #win_prob can be used instead of this for greater accuracy
     def _estimate_win_probability_simple(self, hand_strength: int) -> float:
         """
         Get a rough estimate of win probability based on hand strength.
