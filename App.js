@@ -51,6 +51,14 @@ function App() {
 
   return (
     <div className="App">
+      {/* Top-left stats container */}
+      <div className="top-left-container">
+        <div>Money: ####</div>
+        <div>Round: ####</div>
+        <div> Wins: ####</div>
+        <div>Losses: ####</div>
+      </div>
+
       {/* Header */}
       <header>
         <h1>Let's Go Kambling!</h1>
@@ -58,12 +66,7 @@ function App() {
 
       {/* Main content */}
       <main>
-        {/* Hand history log */}
-        <div className="hand-log" ref={logRef}>
-          {log.map((entry, idx) => (
-            <p key={idx}>{entry}</p>
-          ))}
-        </div>
+        <div>Pot: #### </div>
 
         <div className="action-buttons">
           <button onClick={() => setOverlayVisible(true)}>Raise</button>
@@ -85,14 +88,14 @@ function App() {
         className="hand-card"
         alt="Hand Card"
       />
+          
 
           {/* Bottom-left stats container */}
-        <div className="bottom-left-texts">
-          <div>Pot: #### </div>
-          <div>Total: ####</div>
-          <div>Round: ####</div>
-          <div>Wins: ####</div>
-          <div>Losses: ####</div>
+                  {/* Hand history log */}
+        <div className="hand-log" ref={logRef}>
+          {log.map((entry, idx) => (
+            <p key={idx}>{entry}</p>
+          ))}
         </div>
 
       {/* Mini card columns */}
@@ -111,14 +114,14 @@ function App() {
       {/* Semi-circle wager areas */}
       <div className="opstats-circle">
         <div className="opstats-text">
-          <div>Total: ####</div>
+          <div>Money: ####</div>
           <div>Bet: ####</div>
         </div>
       </div>
 
       <div className="opstats-circle2">
         <div className="opstats-text2">
-          <div>Total: ####</div>
+          <div>Money: ####</div>
           <div>Bet: ####</div>
         </div>
       </div>
@@ -147,6 +150,7 @@ function App() {
             </button>
           </div>
         </div>
+        
       )}
     </div>
   );
