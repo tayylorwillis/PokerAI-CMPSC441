@@ -1,14 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Lets Go Kambling</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Let's Go Kambling!</title>
     <link rel="stylesheet" href="/static/style.css">
-  </head>
-  <body>
-    <main>
-      <h1>Welcome to Lets Go Kambling</h1>
-    </main>
-  </body>
+</head>
+<body>
+
+<header>
+    <h1>Let's Go Kambling!</h1>
+</header>
+
+<main>
+    <p style="font-size: 32px;color: goldenrod;font-weight: bold;margin-top: -15px;">
+        Pot: $<span id="potValue">0</span></p>
+    <p>5 Card Draw Poker</p>
+
+    <!-- Bottom buttons -->
+    <div class="action-buttons">
+        <button id="raiseButton">Raise</button>
+        <button id="holdButton">Hold</button>
+        <button id="foldButton">Fold</button>
+        <button id="newHandButton" class="hidden">New Hand</button>
+    </div>
+</main>
+
+<!-- Five card image slots (player's hand) -->
+<div class="card-row" id="communityCards"></div>
+
+<!-- Hand rankings card in bottom-right -->
+<img src="https://i.pinimg.com/originals/ce/ac/76/ceac7651e78ef135370a8a236580201a.png" class="hand-card" alt="Hand Rankings">
+
+<!-- Four texts in bottom-left -->
+<div class="bottom-left-texts">
+    <div>Money: $<span id="statTotal">1000</span></div>
+    <div>Bet: $<span id="statRound">0</span></div>
+    <div>Hand: <span id="statWins">—</span></div>
+</div>
+
+<!-- Semi-circle for opponent wagers (right) -->
+<div class="opstats-circle2">
+    <div class="opstats-text2">
+        <div>Money: $<span id="rightTotal">1000</span></div>
+        <div>Bet: $<span id="rightBet">0</span></div>
+    </div>
+</div>
+
+<!-- Mini card column on middle-right (opponent's hand) -->
+<div class="mini-card-column" id="rightMini"></div>
+
+<!-- Raise overlay -->
+<div id="overlay" class="hidden">
+    <div class="overlay-content">
+        <p>Enter your Raise Amount:</p>
+        <div class="raise-container">
+            <input type="number" id="raiseInput" value="0" min="0" />
+            <div class="buttons">
+                <button class="adjust" data-value="-50">-50</button>
+                <button class="adjust" data-value="-10">-10</button>
+                <button class="adjust" data-value="-5">-5</button>
+                <button class="adjust" data-value="-1">-1</button>
+                <button class="adjust" data-value="reset">Reset</button>
+                <button class="adjust" data-value="1">+1</button>
+                <button class="adjust" data-value="5">+5</button>
+                <button class="adjust" data-value="10">+10</button>
+                <button class="adjust" data-value="50">+50</button>
+            </div>
+        </div>
+        <button id="confirmRaise" class="confirm-button">Confirm</button>
+    </div>
+</div>
+
+<script src="/static/script.js"></script>
+</body>
 </html>

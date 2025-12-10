@@ -24,7 +24,7 @@ class HandEvaluator:
         Returns:
             tuple: (hand_type_string, rank_value)
         """
-        ranks = [card.rank for card in hand]
+        ranks = [14 if card.rank == 1 else card.rank for card in hand]
         suits = [card.suit for card in hand]
         max_rank = max(ranks)
 
@@ -41,10 +41,9 @@ class HandEvaluator:
         has_four, four_rank = HandEvaluator._has_four_of_kind(rank_counts)
 
         # determine hand type
-        if is_flush and is_straight and max_rank == 14:
-            return "Royal Flush", max_rank
-
         if is_flush and is_straight:
+            if sorted(ranks) == [10, 11, 12, 13, 14]:
+                return "Royal Flush", 10000
             return "Straight Flush", max_rank
 
         if has_four:
@@ -63,7 +62,9 @@ class HandEvaluator:
             return "Three of a Kind", three_rank
 
         if has_two_pair:
-            return "Two Pair", max(pair_rank, second_pair_rank)
+            high_pair = max(pair_rank, second_pair_rank)
+            low_pair = min(pair_rank, second_pair_rank)
+            return "Two Pair", (high_pair * 100 + low_pair)
 
         if has_pair:
             return "One Pair", pair_rank
@@ -77,27 +78,33 @@ class HandEvaluator:
 
     @staticmethod
     def _is_straight(ranks, max_rank):
-        """Check if cards form a straight."""
-        return (max_rank - 1 in ranks and
+        """Check if cards form a straight, including wheel (A-2-3-4-5)."""
+        sorted_ranks = sorted(ranks)
+        if (max_rank - 1 in ranks and
                 max_rank - 2 in ranks and
                 max_rank - 3 in ranks and
-                max_rank - 4 in ranks)
+                max_rank - 4 in ranks):
+            return True
+        if sorted_ranks == [2, 3, 4, 5, 14]:
+            return True
+        return False
 
     @staticmethod
     def _count_ranks(hand):
         """
         Count occurrences of each rank.
-        Returns a list where index represents rank-1 and value is count.
+        Returns a list where index represents rank-2 and value is count (for ranks 2-14).
         """
         rank_counts = [0] * 13
         for card in hand:
-            rank_counts[card.rank - 1] += 1
+            rank = 14 if card.rank == 1 else card.rank
+            rank_counts[rank - 2] += 1
         return rank_counts
 
     @staticmethod
     def _has_four_of_kind(rank_counts):
         """Check for four of a kind."""
-        for rank, count in enumerate(rank_counts, start=1):
+        for rank, count in enumerate(rank_counts, start=2):
             if count == 4:
                 return True, rank
         return False, 0
@@ -105,7 +112,7 @@ class HandEvaluator:
     @staticmethod
     def _has_three_of_kind(rank_counts):
         """Check for three of a kind."""
-        for rank, count in enumerate(rank_counts, start=1):
+        for rank, count in enumerate(rank_counts, start=2):
             if count == 3:
                 return True, rank
         return False, 0
@@ -113,7 +120,7 @@ class HandEvaluator:
     @staticmethod
     def _has_pair(rank_counts):
         """Check for a pair."""
-        for rank, count in enumerate(rank_counts, start=1):
+        for rank, count in enumerate(rank_counts, start=2):
             if count == 2:
                 return True, rank
         return False, 0
@@ -121,7 +128,7 @@ class HandEvaluator:
     @staticmethod
     def _has_two_pair(rank_counts, first_pair_rank):
         """Check for two pair."""
-        for rank, count in enumerate(rank_counts, start=1):
+        for rank, count in enumerate(rank_counts, start=2):
             if count == 2 and rank != first_pair_rank:
                 return True, rank
         return False, 0
