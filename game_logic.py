@@ -19,15 +19,20 @@ class Pot:
         self.player_chips = player_chips1
 
     @staticmethod
-    def my_raise(num, who):
+    def my_bet(num, who):
+        #will be in player and ai_logic classes instead
+        """
         if (who == "ai"):  
             if (agent_chips < num):  #if an attempt to raise is made w/ chips a player does not have, just raise by all remaining chips
                 num = agent_chips
-            
-
-
             agent_chips = agent_chips - num
-
+        """
+        if (who == "ai"):  
+            
+            agent_chips = agent_chips - num
+        if (who == "player"):  
+            
+            player_chips = player_chips - num
         pot_sum = pot_sum + num
         last_raise = num
 
