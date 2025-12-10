@@ -12,33 +12,40 @@ import random
 #import array
 
 class Pot:
-    def __init__(self, pot_sum1 = 0, agent_chips1 = 1000, player_chips1 = 1000):
+    def __init__(self, pot_sum1 = 0):
         self.pot_sum = pot_sum1
         self.last_raise = 0
-        self.agent_chips = agent_chips1
-        self.player_chips = player_chips1
-        self.agent_chips_in = 0             #how many of their chips are in curr pot (used for call calc)
-        self.player_chips_in  = 0
+        self.player_chips_in = 0  # how many chips player has in current pot
+        self.opponent_chips_in = 0  # how many chips opponent has in current pot
 
-    @staticmethod
-    def my_bet(num, who):
-        #will be in player and ai_logic classes instead
-        """
-        if (who == "ai"):  
-            if (agent_chips < num):  #if an attempt to raise is made w/ chips a player does not have, just raise by all remaining chips
-                num = agent_chips
-            agent_chips = agent_chips - num
-        """
-        if (who == "agent"):  
-            agent_chips_in = agent_chips_in + num
-            agent_chips = agent_chips - num
-        if (who == "player"):  
-            player_chips_in = player_chips_in + num
-            player_chips = player_chips - num
-        pot_sum = pot_sum + num
-        last_raise = num
-
-    def 
+    def add_bet(self, num, who):
+        """Add a bet to the pot from either player or opponent."""
+        if who == "opponent":
+            self.opponent_chips_in += num
+        elif who == "player":
+            self.player_chips_in += num
+        self.pot_sum += num
+        self.last_raise = num
+        return num
+    
+    def get_call_amount(self, who):
+        """Calculate how much a player needs to call."""
+        if who == "player":
+            return max(0, self.opponent_chips_in - self.player_chips_in)
+        elif who == "opponent":
+            return max(0, self.player_chips_in - self.opponent_chips_in)
+        return 0
+    
+    def reset(self):
+        """Reset pot for new hand."""
+        self.pot_sum = 0
+        self.last_raise = 0
+        self.player_chips_in = 0
+        self.opponent_chips_in = 0
+    
+    def get_total(self):
+        """Get total pot amount."""
+        return self.pot_sum 
 
         
 
