@@ -29,6 +29,7 @@ class Player:
         """Place a bet (deduct from money, add to current_bet)"""
         if amount > self.money:
             amount = self.money  # All-in
+            self.is_active = False
         self.money -= amount
         self.current_bet += amount
         Pot.my_bet(amount, "player")
@@ -36,6 +37,7 @@ class Player:
 
     def call():
         """checks amount needed to send to place bet in order to call (poker term not cs term)""""
+        call_amt = pot.
 
     def win_pot(self, pot_amount):
         """Add winnings to player's money"""

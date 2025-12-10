@@ -12,11 +12,13 @@ import random
 #import array
 
 class Pot:
-    def __init__(self, pot_sum1 = 0, agent_chips1 = 10000, player_chips1 = 10000):
+    def __init__(self, pot_sum1 = 0, agent_chips1 = 1000, player_chips1 = 1000):
         self.pot_sum = pot_sum1
         self.last_raise = 0
         self.agent_chips = agent_chips1
         self.player_chips = player_chips1
+        self.agent_chips_in = 0             #how many of their chips are in curr pot (used for call calc)
+        self.player_chips_in  = 0
 
     @staticmethod
     def my_bet(num, who):
@@ -27,14 +29,16 @@ class Pot:
                 num = agent_chips
             agent_chips = agent_chips - num
         """
-        if (who == "ai"):  
-            
+        if (who == "agent"):  
+            agent_chips_in = agent_chips_in + num
             agent_chips = agent_chips - num
         if (who == "player"):  
-            
+            player_chips_in = player_chips_in + num
             player_chips = player_chips - num
         pot_sum = pot_sum + num
         last_raise = num
+
+    def 
 
         
 
