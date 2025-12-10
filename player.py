@@ -1,5 +1,3 @@
-from game_logic import Pot
-
 class Player:
     def __init__(self, name, starting_money=1000, is_bot=False):
         self.name = name
@@ -28,7 +26,6 @@ class Player:
         """Place a bet (deduct from money, add to current_bet)"""
         if amount > self.money:
             amount = self.money  # All-in
-            self.is_active = False
         self.money -= amount
         self.current_bet += amount
         # Add to pot if pot instance is provided
