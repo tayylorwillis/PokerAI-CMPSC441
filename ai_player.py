@@ -24,6 +24,10 @@ class BaseAIPlayer(ABC):
         self.name = name
         self.money = money
         self.is_bot = True
+        self.hand = []
+        self.current_bet = 0
+        self.is_folded = False
+        self.is_active = True  # Player is still in the game
 
     @abstractmethod
     def decide_action(self, game_state, player) -> Tuple[str, Optional[int]]:
@@ -60,7 +64,8 @@ class BaseAIPlayer(ABC):
         Returns:
             str: Strategy name or description
         """
-        pass
+        strategy = "This agent uses knowledge of the likelihood of its hand winning to set a max percentage of its current money that it is willing to bet."
+        return strategy
 
     # ------------------- HELPER METHODS -------------------
 
@@ -182,6 +187,28 @@ class BaseAIPlayer(ABC):
             'value': value,
             'name': name
         }
+
+    def bet_amount():
+        """Choose how much to bet"""
+        standard = 1000                         #since players all start with 1000, use this as point of comparison
+        prob_win = win_prob()                   #find likelihood of winning hand
+        max_bet = int(self.money * prob_win)    #set max willing to bet as prob of win percent of remaining money
+
+
+        
+
+
+        amount = int(random()*max_bet)          #amount is random num up to max_bet
+        return amount
+
+    def place_bet(self):
+        """Place a bet (deduct from money, add to current_bet)"""
+        amount = bet_amount()
+        if amount > self.money:
+            amount = self.money  # All-in
+        self.money -= amount
+        self.current_bet += amount
+        return amount
 
     #win_prob can be used instead of this for greater accuracy
     def _estimate_win_probability_simple(self, hand_strength: int) -> float:
