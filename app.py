@@ -53,6 +53,7 @@ def get_game_state():
             'name': player.name,
             'money': player.money,
             'current_bet': player.current_bet,
+            'held': player_held,
             'hole': [card_to_dict(c) for c in player.hand],
             'best': {
                 'hand': player_best[0] if player_best else None,
@@ -63,6 +64,7 @@ def get_game_state():
             'name': opponent.name,
             'money': opponent.money,
             'current_bet': opponent.current_bet,
+            'held': opponent_held,
             'hole': [card_to_dict(c) for c in opponent.hand],
             'best': {
                 'hand': opponent_best[0] if opponent_best else None,

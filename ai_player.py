@@ -24,11 +24,14 @@ class BaseAIPlayer(ABC):
         """
         self.name = name
         self.money = money
+        self.start_money = money
         self.is_bot = True
         self.hand = []
         self.current_bet = 0
         self.is_folded = False
         self.is_active = True  # Player is still in the game
+        #very naive, change later
+        self.willing_to_bet = int(self.money * win_prob(hand))    #set max willing to bet as (prob of win)percent of remaining money
 
     @abstractmethod
     def decide_action(self, game_state, player) -> Tuple[str, Optional[int]]:
@@ -53,13 +56,22 @@ class BaseAIPlayer(ABC):
                 - amount (int|None): Raise amount if action is 'raise', None otherwise
         """
         '''
-        Call when:
-        Fold when:
-        Raise when:
-        Hold when:
+        Call when: cost to win <= remainder willing to bet
+        Fold when: cost to win >= remainder willing to bet
+        Raise when: cost to win <= remainder willing to bet (rand 50/50 chance whether to call or raise)
+        Hold when: cost to win >= remainder willing to bet
+        Willing to bet = win_prob
+        amount_to_call is effectively cost of win at given turn
         '''
         state = json.loads(get_game_state())
+        amount_bet = 
         curr_pot = state["pot"]
+        if (state[player["held"]] == False):
+            amount_to_call = state[player["current_bet"]] - state[opponent["current_bet"]]
+        if (state[player["held"]] == True):
+            amount_to_call = 0              #call is not appropriate here
+        if (amount_to_call > 0 and amount_to_call
+        
         pot_odds = _calculate_pot_odds(self, curr_pot, amount_to_call)
 
         pass
@@ -203,7 +215,7 @@ class BaseAIPlayer(ABC):
     def bet_amount():
         """Choose how much to bet"""
         standard = 1000                         #since players all start with 1000, use this as point of comparison
-        prob_win = win_prob()                   #find likelihood of winning hand
+        prob_win = win_prob(hand)                   #find likelihood of winning hand
         max_bet = int(self.money * prob_win)    #set max willing to bet as prob of win percent of remaining money
 
 
