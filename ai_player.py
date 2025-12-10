@@ -52,9 +52,15 @@ class BaseAIPlayer(ABC):
                 - action (str): 'call', 'raise', or 'fold'
                 - amount (int|None): Raise amount if action is 'raise', None otherwise
         """
-
+        '''
+        Call when:
+        Fold when:
+        Raise when:
+        Hold when:
+        '''
         state = json.loads(get_game_state())
         curr_pot = state["pot"]
+        pot_odds = _calculate_pot_odds(self, curr_pot, amount_to_call)
 
         pass
 
@@ -69,8 +75,7 @@ class BaseAIPlayer(ABC):
         Returns:
             str: Strategy name or description
         """
-        strategy = "This agent uses knowledge of the likelihood of its hand winning to set a max percentage of its current money that it is willing to bet."
-        return strategy
+        pass
 
     # ------------------- HELPER METHODS -------------------
 
@@ -113,12 +118,14 @@ class BaseAIPlayer(ABC):
             bet_to_call: Amount needed to call
 
         Returns:
-            float: Pot odds ratio (pot:bet_to_call)
+            float: Pot odds ratio (bet_to_call:pot)
                 - Returns infinity if bet_to_call is 0
         """
         if bet_to_call == 0:
             return float('inf')
-        return pot / bet_to_call
+        if pot == 0:
+            return float('inf')
+        return bet_to_call / pot
 
     def _get_available_actions(self, player, current_bet: int) -> List[str]:
         """
