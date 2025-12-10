@@ -6,6 +6,7 @@ Base AI player - Abstract base class for AI implementations
 from abc import ABC, abstractmethod
 from typing import Tuple, Optional, List
 from hand_evaluator import win_prob
+from app import get_game_state
 
 
 class BaseAIPlayer(ABC):
@@ -51,6 +52,10 @@ class BaseAIPlayer(ABC):
                 - action (str): 'call', 'raise', or 'fold'
                 - amount (int|None): Raise amount if action is 'raise', None otherwise
         """
+
+        state = json.loads(get_game_state())
+        curr_pot = state["pot"]
+
         pass
 
     @abstractmethod
