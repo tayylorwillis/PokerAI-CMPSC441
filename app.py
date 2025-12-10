@@ -64,6 +64,36 @@ def make_state():
 GAME_STATE = make_state()
 
 
+def reset_hand_keep_balances():
+    """Reset hand/pot but keep player balances intact."""
+    global GAME_STATE
+    if not GAME_STATE:
+        GAME_STATE = make_state()
+        return GAME_STATE
+
+    deck = Deck()
+    deck.reset()
+    GAME_STATE["deck"] = deck
+
+    player = GAME_STATE["player"]
+    opponent = GAME_STATE["opponent"]
+
+    player.reset_for_new_round()
+    opponent.reset_for_new_round()
+
+    GAME_STATE.update({
+        "pot": 0,
+        "player_held": False,
+        "opponent_held": False,
+        "status": "playing",
+        "result": None,
+    })
+
+    player.receive_hand(deck.deal_hand(5))
+    opponent.receive_hand(deck.deal_hand(5))
+    return GAME_STATE
+
+
 def serialize_state(state, reveal_opponent=False):
     player = state["player"]
     opponent = state["opponent"]
@@ -106,6 +136,14 @@ def index():
 def api_new_game():
     global GAME_STATE
     GAME_STATE = make_state()
+    return jsonify(serialize_state(GAME_STATE))
+
+
+@app.post('/api/new-hand')
+def api_new_hand():
+    """Start a new hand but keep player balances."""
+    global GAME_STATE
+    GAME_STATE = reset_hand_keep_balances()
     return jsonify(serialize_state(GAME_STATE))
 
 

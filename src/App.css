@@ -1,7 +1,7 @@
 /* App container */
 .App {
   text-align: center;
-  background-color: rgb(110,0,20); /* Dark red / gambling red */
+  background-color: rgb(110,0,20);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -13,7 +13,6 @@
   font-family: Arial, sans-serif;
 }
 
-/* Header */
 header {
   color: goldenrod;
   font-size: 2.5rem;
@@ -22,7 +21,6 @@ header {
   margin-bottom: -1.5em;
 }
 
-/* Main content area */
 main {
   min-height: 26vh;
   padding: 2em;
@@ -37,7 +35,6 @@ main {
   position: relative;
 }
 
-/* Action buttons at bottom of main */
 .action-buttons {
   position: absolute;
   bottom: 20px;
@@ -53,7 +50,7 @@ main {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background-color: rgb(235, 171, 11); /* golden buttons */
+  background-color: rgb(235, 171, 11);
   color: black;
   font-weight: bold;
   min-width: 304px;
@@ -61,7 +58,6 @@ main {
   box-shadow: 0 3px 8px rgba(0,0,0,0.4);
 }
 
-/* Main card row */
 .card-row {
   display: flex;
   justify-content: center;
@@ -70,14 +66,13 @@ main {
 }
 
 .card-row img {
-  width: 194px;  /* smaller main cards */
+  width: 194px;
   height: auto;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   border: 2px solid goldenrod;
 }
 
-/* Hand card bottom-right */
 .hand-card {
   position: fixed;
   bottom: 20px;
@@ -87,32 +82,29 @@ main {
   z-index: 1000;
 }
 
-/* Bottom-left stats */
 .bottom-left-texts {
   position: fixed;
   bottom: 20px;
   left: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px; /* slightly larger gap between lines */
-  align-items: center; /* center text horizontally */
-  justify-content: center; /* center text vertically inside container if needed */
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
   color: rgb(235, 171, 11);
-  font-size: 34px; /* bigger text */
+  font-size: 34px;
   font-weight: bold;
   z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.7); /* optional: makes it a container */
+  background-color: rgba(0, 0, 0, 0.7);
   padding: 12px 16px;
   border-radius: 12px;
   border: 2px solid goldenrod;
-  min-width: 120px; /* ensures container has some width */
-  text-align: center; /* ensures multiline text is centered */
+  min-width: 120px;
+  text-align: center;
   width: 337px;
   height: 470px;
 }
 
-
-/* Mini cards middle-right */
 .mini-card-column {
   position: fixed;
   top: 35%;
@@ -125,18 +117,11 @@ main {
 }
 
 .mini-card-column img {
-  width: 65px;   
+  width: 65px;
   height: auto;
   box-shadow: 0 3px 8px rgba(0,0,0,0.5);
 }
 
-/* Generic small card size for dynamic rendering */
-img.sm {
-  width: 65px;
-  height: auto;
-}
-
-/* Mini cards middle-left */
 .mini-card-column2 {
   position: fixed;
   top: 35%;
@@ -149,12 +134,11 @@ img.sm {
 }
 
 .mini-card-column2 img {
-  width: 65px;   
+  width: 65px;
   height: auto;
   box-shadow: 0 3px 8px rgba(0,0,0,0.5);
 }
 
-/* Opponent semi-circle stats */
 .opstats-circle, .opstats-circle2 {
   width: 19.4%;
   height: 44px;
@@ -183,7 +167,6 @@ img.sm {
   pointer-events: auto;
 }
 
-/* Overlay for raise input */
 #overlay {
   position: fixed;
   top: 0;
@@ -219,7 +202,6 @@ img.sm {
   margin-bottom: 10px;
 }
 
-/* Overlay buttons */
 .buttons {
   display: flex;
   flex-wrap: wrap;
@@ -248,10 +230,14 @@ button.confirm-button {
   color: goldenrod;
   font-family: monospace;
   text-align: left;
-  max-height: 200px;  /* scrollable height */
-  overflow-y: auto;   /* enable scrolling */
+  max-height: 200px;
+  overflow-y: auto;
   min-height: 200px;
-
   font-size: 15px;
   line-height: 0.1;
+}
+
+img.sm {
+  width: 65px;
+  height: auto;
 }

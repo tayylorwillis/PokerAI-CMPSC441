@@ -40,7 +40,8 @@ function App() {
       body: JSON.stringify({ action, amount }),
     });
     setGameState(state);
-    setLog(prev => [...prev, `You ${action}${amount ? ` ${amount}` : ''}`, `Status: ${state.status}${state.result ? ` (${state.result})` : ''}`]);
+    const resultMsg = state.result ? ` - ${state.result}` : '';
+    setLog(prev => [...prev, `You ${action}${amount ? ` ${amount}` : ''}`, `Your Balance: $${state.player?.money ?? 0} | Opponent: $${state.opponent?.money ?? 0}${resultMsg}`]);
   };
 
   const handleRaiseConfirm = () => {
@@ -115,10 +116,10 @@ function App() {
 
       <div className="bottom-left-texts">
         <div>Pot: ${gameState?.pot ?? 0}</div>
-        <div>Total: ${gameState?.player?.money ?? 0}</div>
-        <div>Round: ${gameState?.player?.current_bet ?? 0}</div>
+        <div>Your Total: ${gameState?.player?.money ?? 0}</div>
+        <div>Your Bet: ${gameState?.player?.current_bet ?? 0}</div>
         <div>Best: {gameState?.player?.best?.hand ?? '—'}</div>
-        <div>Status: {status}{gameState?.result ? ` (${gameState.result})` : ''}</div>
+        <div>Status: {isFinished ? 'Winner!' : status}{gameState?.result ? ` (${gameState.result})` : ''}</div>
       </div>
 
       <div className="mini-card-column">
@@ -131,15 +132,8 @@ function App() {
 
       <div className="opstats-circle">
         <div className="opstats-text">
-          <div>Total: ${gameState?.player?.money ?? 0}</div>
-          <div>Bet: ${gameState?.player?.current_bet ?? 0}</div>
-        </div>
-      </div>
-
-      <div className="opstats-circle2">
-        <div className="opstats-text2">
-          <div>Total: ${gameState?.opponent?.money ?? 0}</div>
-          <div>Bet: ${gameState?.opponent?.current_bet ?? 0}</div>
+          <div>Opponent Total: ${gameState?.opponent?.money ?? 0}</div>
+          <div>Opponent Bet: ${gameState?.opponent?.current_bet ?? 0}</div>
         </div>
       </div>
 
