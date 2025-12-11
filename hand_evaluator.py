@@ -140,6 +140,19 @@ class HandEvaluator:
         return False, 0
 
     @staticmethod
+    def _get_kickers(hand, main_rank):
+        """
+        Get kicker cards (cards not part of the main hand ranking).
+        Returns list of kicker ranks sorted in descending order.
+        """
+        kickers = []
+        for card in hand:
+            rank = 14 if card.rank == 1 else card.rank
+            if rank != main_rank:
+                kickers.append(rank)
+        return sorted(kickers, reverse=True)
+
+    @staticmethod
     def compare_hands(hand1, hand2):
         """
         Compare two hands and return the winner.
@@ -147,7 +160,7 @@ class HandEvaluator:
             hand1: List of 5 Card objects
             hand2: List of 5 Card objects
         Returns:
-            int: 1 if hand1 wins, 2 if hand2 wins, 0 for tie
+            int: 1 if hand1 wins, 2 if hand2 wins, 0 for tie (should be rare)
         """
         type1, rank1 = HandEvaluator.evaluate_hand(hand1)
         type2, rank2 = HandEvaluator.evaluate_hand(hand2)
@@ -162,7 +175,17 @@ class HandEvaluator:
         elif rank2 > rank1:
             return 2
 
-        return 0  # Tie
+        # Same hand type and rank - use kicker comparison
+        kickers1 = HandEvaluator._get_kickers(hand1, rank1 if type1 not in ["Two Pair", "Full House"] else rank1 % 100)
+        kickers2 = HandEvaluator._get_kickers(hand2, rank2 if type2 not in ["Two Pair", "Full House"] else rank2 % 100)
+        
+        for k1, k2 in zip(kickers1, kickers2):
+            if k1 > k2:
+                return 1
+            elif k2 > k1:
+                return 2
+        
+        return 0  # Tie (extremely unlikely with proper card deck)
 
 
 def print_hand(hand):
