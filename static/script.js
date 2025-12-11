@@ -6,15 +6,19 @@ const confirmRaise = document.getElementById('confirmRaise');
 const raiseInput = document.getElementById('raiseInput');
 
 const communityContainer = document.getElementById('communityCards');
+const playerHandContainer = document.getElementById('playerHandCards');
 const rightMiniContainer = document.getElementById('rightMini');
-
-const cardBack = 'https://i.pinimg.com/originals/ce/ac/76/ceac7651e78ef135370a8a236580201a.png';
 
 function createCardImg(card, size = 'md') {
     const img = document.createElement('img');
     img.className = `card-img ${size === 'sm' ? 'sm' : ''}`.trim();
-    img.src = card?.image || cardBack;
-    img.alt = `${card?.rank ?? ''}${card?.suit ?? ''}`;
+    if (card?.hidden) {
+        img.src = 'https://www.deckofcardsapi.com/static/img/back.png';
+        img.alt = 'Hidden card';
+    } else {
+        img.src = card?.image || '';
+        img.alt = `${card?.rank ?? ''}${card?.suit ?? ''}`;
+    }
     img.loading = 'lazy';
     return img;
 }
@@ -42,41 +46,23 @@ async function loadGame() {
 
 function renderState(state) {
     if (!state) return;
-    // Player's hand goes in the main card row (large cards)
     renderCards(communityContainer, state.player.hole, 'md');
-    // Opponent's hand goes in the mini card column (small cards)
     renderCards(rightMiniContainer, state.opponent.hole, 'sm');
 
     updateText('potValue', state.pot ?? '0');
     updateText('statTotal', state.player.money ?? '');
     updateText('statRound', state.player.current_bet ?? '');
-    updateText('statWins', state.player.best?.hand ?? '—');
+    updateText('statWins', state.player.best?.hand ?? '');
     updateText('rightTotal', state.opponent.money ?? '');
     updateText('rightBet', state.opponent.current_bet ?? '');
 
-    const newHandButton = document.getElementById('newHandButton');
-    const raiseButton = document.getElementById('raiseButton');
-    const holdButton = document.getElementById('holdButton');
-    const foldButton = document.getElementById('foldButton');
-
-    if (state.status === 'finished') {
-        // Hide game action buttons
-        raiseButton?.classList.add('hidden');
-        holdButton?.classList.add('hidden');
-        foldButton?.classList.add('hidden');
-        // Show new hand button
+    const holdStatus = state.player.held ? ' (HELD)' : '';
+    const oppHoldStatus = state.opponent.held ? ' (HELD)' : '';
+    if (state.status === 'finished' && state.result) {
+        const resultText = state.result === 'player' ? 'You win!' : state.result === 'opponent' ? 'Opponent wins' : 'Tie';
+        updateText('potValue', `${state.pot} • ${resultText}`);
         newHandButton?.classList.remove('hidden');
-
-        if (state.result) {
-            const resultText = state.result === 'player' ? 'You win!' : state.result === 'opponent' ? 'Opponent wins' : 'Tie';
-            updateText('potValue', `${state.pot} • ${resultText}`);
-        }
     } else {
-        // Show game action buttons
-        raiseButton?.classList.remove('hidden');
-        holdButton?.classList.remove('hidden');
-        foldButton?.classList.remove('hidden');
-        // Hide new hand button
         newHandButton?.classList.add('hidden');
     }
 }
@@ -100,7 +86,7 @@ const hideOverlay = () => overlay?.classList.add('hidden');
 raiseButton?.addEventListener('click', showOverlay);
 holdButton?.addEventListener('click', () => sendAction('hold'));
 foldButton?.addEventListener('click', () => sendAction('fold'));
-document.getElementById('newHandButton')?.addEventListener('click', startNewHand);
+newHandButton?.addEventListener('click', () => loadGame());
 
 confirmRaise?.addEventListener('click', () => {
     const amount = Number(raiseInput?.value ?? 0);
@@ -129,5 +115,4 @@ window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') hideOverlay();
 });
 
-// Kick off
 loadGame();
