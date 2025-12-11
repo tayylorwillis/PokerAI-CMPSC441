@@ -156,7 +156,6 @@ INSTRUCTIONS:
 {{"action": "call/raise/fold", "amount": 50, "reasoning": "your reasoning", "confidence": 0.8}}
 
 JSON RESPONSE:"""
-
         return prompt
 
     def _call_gemini(self, prompt: str) -> str:
