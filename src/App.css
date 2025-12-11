@@ -168,16 +168,19 @@ main {
 .mini-card-column {
   position: fixed;
   top: 35%;
-  right: 20px;
+  right: 17.25px;
   transform: translateY(-50%);
+  width: 19.4%;
   display: flex;
   flex-direction: row;
-  gap: 12px;
+  gap: 8px;
+  justify-content: center;
   z-index: 800;
 }
 
-.mini-card-column img {
-  width: 65px;
+.mini-card-column img,
+.mini-card-column .custom-card {
+  width: 55px;
   aspect-ratio: 226 / 314;
   height: auto;
   box-shadow: 0 3px 8px rgba(0,0,0,0.5);
@@ -186,16 +189,19 @@ main {
 .mini-card-column2 {
   position: fixed;
   top: 35%;
-  left: 20px;
+  left: 17.25px;
   transform: translateY(-50%);
+  width: 19.4%;
   display: flex;
   flex-direction: row;
-  gap: 12px;
+  gap: 8px;
+  justify-content: center;
   z-index: 800;
 }
 
-.mini-card-column2 img {
-  width: 65px;
+.mini-card-column2 img,
+.mini-card-column2 .custom-card {
+  width: 55px;
   aspect-ratio: 226 / 314;
   height: auto;
   box-shadow: 0 3px 8px rgba(0,0,0,0.5);
