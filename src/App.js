@@ -166,6 +166,20 @@ function App() {
           ))}
         </div>
 
+        <div className = "container">
+          <div className = "back-stacks">
+            <ChipStack count = {10} size = {30} color = "blue" borderColor = "white" borderWidth = {3} />
+            <ChipStack count = {10} size = {30} color = "white" borderColor = "blue" borderWidth = {3} />
+            <ChipStack count = {10} size = {30} color = "green" borderColor = "white" borderWidth = {3} />
+            <ChipStack count = {10} size = {30} color = "black" borderColor = "gray" borderWidth = {3} />
+            <ChipStack count = {10} size = {30} color = "red" borderColor = "white" borderWidth = {3} />
+          </div>
+          <div className = "front-stacks">
+            <ChipStack count = {7} size = {30} color = "purple" borderColor = "white" borderWidth = {3} stackZ = {2000} />
+            <ChipStack count = {7} size = {30} color = "purple" borderColor = "blue" borderWidth = {3} stackZ = {2000} />
+          </div>
+        </div> 
+
         <div className="action-buttons">
           <button onClick={() => {
             const minRaise = Math.max(0, highestBet - (gameState?.player?.current_bet ?? 0));
