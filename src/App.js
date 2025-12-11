@@ -18,6 +18,61 @@ const faceCardImages = {
   10: '/Sam.png',   // Ten
 };
 
+function ChipStack({
+  count = 5,
+  size = 50,
+  color = "red",
+  borderColor = "black",
+  borderWidth = 2,
+  borderStyle = "solid",
+  boxShadow, 
+  stackOffset = 0, // horizontal visual offset in px (can overlap neighbors)
+  stackZ, // optional z-index of the whole stack to appear in front/behind
+}) {
+  const chips = Array.from({ length: count });
+  const offset = size * 0.3;
+  const stackHeight = size + (count - 1) * offset;
+
+  // use provided border and shadow props directly
+  const realBorderColor = borderColor;
+  const realBorderWidth = borderWidth;
+  const realBorderStyle = borderStyle;
+  const realBoxShadow = boxShadow;
+
+  // compute effective stack z-index: explicit `stackZ` wins
+  const effectiveStackZ = stackZ != null ? stackZ : 0;
+
+  return (
+    <div
+      className="chip-stack"
+      style={{
+        width: size,
+        height: stackHeight,
+        transform: `translateX(${stackOffset}px)`,
+        zIndex: effectiveStackZ,
+      }}
+    >
+      {chips.map((_, idx) => (
+        <div
+          key={idx}
+          className="chip"
+          style={{
+            width: size,
+            height: size,
+            bottom: idx * offset,
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: color,
+            border: `${realBorderWidth}px ${realBorderStyle} ${realBorderColor}`,
+            boxShadow: realBoxShadow,
+            zIndex: idx,
+          }}
+        ></div>
+      ))}
+    </div>
+  );
+}
+
 function App() {
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [raiseAmount, setRaiseAmount] = useState(0);
@@ -176,7 +231,7 @@ function App() {
           </div>
           <div className = "front-stacks">
             <ChipStack count = {7} size = {30} color = "purple" borderColor = "white" borderWidth = {3} stackZ = {2000} />
-            <ChipStack count = {7} size = {30} color = "purple" borderColor = "blue" borderWidth = {3} stackZ = {2000} />
+            <ChipStack count = {7} size = {30} color = "goldenrod" borderColor = "white "borderWidth = {3} stackZ = {2000} />
           </div>
         </div> 
 
