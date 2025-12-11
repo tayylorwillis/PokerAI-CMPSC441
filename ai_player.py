@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Optional, List
 from hand_evaluator import win_prob
 from app import get_game_state
+import random
 
 
 class BaseAIPlayer(ABC):
@@ -64,17 +65,40 @@ class BaseAIPlayer(ABC):
         amount_to_call is effectively cost of win at given turn
         '''
         state = json.loads(get_game_state())
-        amount_bet = 
+
+        already_bet = self.start_money - self.money
+        remaining_willing_to_bet = self.willing_to_bet - already_bet
+
+        if (remaining_willing_to_bet == 0):
+            return "fold"
+
         curr_pot = state["pot"]
+
+        #check if calling is appropriate and how much is needed to call.
         if (state[player["held"]] == False):
             amount_to_call = state[player["current_bet"]] - state[opponent["current_bet"]]
         if (state[player["held"]] == True):
             amount_to_call = 0              #call is not appropriate here
-        if (amount_to_call > 0 and amount_to_call
         
-        pot_odds = _calculate_pot_odds(self, curr_pot, amount_to_call)
+        #if willing to keep playing and call available, choose randomly whether to call or raise
+        #this will help prevent player from seeing behavior pattern
+        if (amount_to_call > 0 and amount_to_call < remaining_willing_to_bet):
+            choices = ["call", "raise"]
+            decision = random.choice(choices)
 
-        pass
+        #if willing to keep playing and call not available, choose randomly whether to hold or raise
+        #this will help prevent player from seeing behavior pattern
+        if (amount_to_call == 0):
+            choices = ["hold", "raise"]
+            decision = random.choice(choices)
+
+        if (decision == "call"):
+            return "call"
+
+        if (decision == "raise"):
+            raise_amount = random.randint(1, remaining_willing_to_bet)
+            return "raise", raise_amount
+        
 
     @abstractmethod
     def get_strategy_name(self) -> str:
@@ -87,36 +111,48 @@ class BaseAIPlayer(ABC):
         Returns:
             str: Strategy name or description
         """
-        pass
+        #do this better later
+        strategy = "This AI agent's strategy is to evaluate the likelihood that its hand will win and make bets corresponding to this liklihood."
+        print(strategy)
+        return strategy
+#here to helper curr working on
+
+    def receive_hand(self, hand):
+        """Assign a hand to the player"""
+        self.hand = hand
+
+    def reset_for_new_round(self):
+        """Reset ai_player state for a new round"""
+        self.hand = []
+        self.current_bet = 0
+        self.is_folded = False
+
+    def place_bet(self, amount, pot=None):
+        """Place a bet (deduct from money, add to current_bet)"""
+        self.money -= amount
+        self.current_bet += amount
+        # Add to pot if pot instance is provided
+        if pot:
+            who = "opponent" if self.is_bot else "player"
+            pot.add_bet(amount, who)
+        return amount
+
+    def call(self, pot):
+        """Call the current bet (match opponent's bet)."""
+        who = "opponent" if self.is_bot else "player"
+        call_amt = pot.get_call_amount(who)
+        if call_amt > 0:
+            return self.place_bet(call_amt, pot)
+        return 0
+
+    def win_pot(self, pot_amount):
+        """Add winnings to player's money"""
+        self.money += pot_amount
+
+    def __str__(self):
+        return f"{self.name}: ${self.money} (Current bet: ${self.current_bet})"
 
     # ------------------- HELPER METHODS -------------------
-
-    def _get_hand_strength(self, hand) -> int:
-        """
-        Evaluate hand strength using the HandEvaluator.
-
-        This provides a quick way to get a numerical rating of hand strength
-        without needing to understand the full evaluation system.
-
-        Args:
-            hand: Hand object containing cards
-
-        Returns:
-            int: Hand strength ranking (1-10) where:
-                1 = High Card (weakest)
-                2 = One Pair
-                3 = Two Pair
-                4 = Three of a Kind
-                5 = Straight
-                6 = Flush
-                7 = Full House
-                8 = Four of a Kind
-                9 = Straight Flush
-                10 = Royal Flush (strongest)
-        """
-        from hand_evaluator import HandEvaluator
-        ranking, _, _ = HandEvaluator.evaluate(hand)
-        return ranking
 
     def _calculate_pot_odds(self, pot: int, bet_to_call: int) -> float:
         """
@@ -139,31 +175,6 @@ class BaseAIPlayer(ABC):
             return float('inf')
         return bet_to_call / pot
 
-    def _get_available_actions(self, player, current_bet: int) -> List[str]:
-        """
-        Determine which actions are legally available to the player.
-
-        Args:
-            player: Player object to check
-            current_bet: Current bet that must be matched
-
-        Returns:
-            list: Available actions, always includes 'fold', may include
-                'call' and/or 'raise' depending on chip stack
-        """
-        actions = ['fold']  # Can always fold
-
-        amount_to_call = current_bet - player.current_bet
-
-        # Can call if has enough money
-        if player.can_bet(amount_to_call):
-            actions.append('call')
-
-        # Can raise if has money beyond the call amount
-        if player.money > amount_to_call:
-            actions.append('raise')
-
-        return actions
 
     def _calculate_expected_value(self, pot: int, bet_to_call: int,
                                   win_probability: float) -> float:
@@ -218,50 +229,10 @@ class BaseAIPlayer(ABC):
         prob_win = win_prob(hand)                   #find likelihood of winning hand
         max_bet = int(self.money * prob_win)    #set max willing to bet as prob of win percent of remaining money
 
-
-        
-
-
         amount = int(random()*max_bet)          #amount is random num up to max_bet
         return amount
 
-    def place_bet(self):
-        """Place a bet (deduct from money, add to current_bet)"""
-        amount = bet_amount()
-        if amount > self.money:
-            amount = self.money  # All-in
-        self.money -= amount
-        self.current_bet += amount
-        return amount
 
-    #win_prob can be used instead of this for greater accuracy
-    def _estimate_win_probability_simple(self, hand_strength: int) -> float:
-        """
-        Get a rough estimate of win probability based on hand strength.
-
-        This is a simplified heuristic. For more accurate probabilities,
-        implement Monte Carlo simulation or use lookup tables.
-
-        Args:
-            hand_strength: Hand ranking (1-10)
-
-        Returns:
-            float: Estimated win probability (0.0 to 1.0)
-        """
-        # Simple lookup table for rough estimates
-        probabilities = {
-            10: 0.999,  # Royal Flush - almost always wins
-            9: 0.95,  # Straight Flush
-            8: 0.90,  # Four of a Kind
-            7: 0.85,  # Full House
-            6: 0.75,  # Flush
-            5: 0.65,  # Straight
-            4: 0.55,  # Three of a Kind
-            3: 0.45,  # Two Pair
-            2: 0.35,  # One Pair
-            1: 0.20  # High Card
-        }
-        return probabilities.get(hand_strength, 0.5)
 
     def __repr__(self):
         """String representation of the AI player."""
