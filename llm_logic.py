@@ -26,8 +26,7 @@ class GeminiBot(BaseAIPlayer):
         before committing chips. Only raise with very strong hands (Full House or better).""",
 
         "balanced": """You are a balanced poker player. You mix conservative and aggressive play 
-        depending on the situation. You consider pot odds, hand strength, and position. 
-        You can bluff occasionally but prefer solid play. Make mathematically sound decisions.""",
+        depending on the situation. You consider pot odds, hand strength, and position. Play like a seasoned player and willing to take risks even if its a gamble.""",
 
         "aggressive": """You are an aggressive poker player. You bet and raise frequently to apply 
         pressure. You're willing to bluff and take risks. You use aggression to push opponents 
@@ -104,18 +103,30 @@ class GeminiBot(BaseAIPlayer):
 
     def _prepare_context(self, game_state, player) -> Dict:
         """Prepare game context for Gemini."""
-        ranking, value, name = HandEvaluator.evaluate_hand(player.hand)
+        hand_eval = HandEvaluator.evaluate_hand(player.hand)
+        # Support both 2-tuple and 3-tuple return shapes defensively
+        if isinstance(hand_eval, (list, tuple)):
+            if len(hand_eval) >= 2:
+                hand_name, hand_value = hand_eval[0], hand_eval[1]
+            else:
+                hand_name, hand_value = hand_eval[0], 0
+        else:
+            hand_name, hand_value = str(hand_eval), 0
+        hand_ranking = HandEvaluator.HAND_RANKINGS.get(hand_name, 1)
+
         pot = game_state.betting_manager.get_pot()
         current_bet = game_state.betting_manager.current_round.current_bet
-        amount_to_call = current_bet - player.current_bet
+        amount_to_call = max(0, current_bet - player.current_bet)
+
         pot_odds = self._calculate_pot_odds(pot, amount_to_call) if amount_to_call > 0 else float('inf')
         available_actions = self._get_available_actions(player, current_bet)
-        win_probability = self._estimate_win_probability_simple(ranking)
+        win_probability = self._estimate_win_probability_simple(hand_ranking)
+
         return {
             'hand': player.hand,
-            'hand_name': name,
-            'hand_ranking': ranking,
-            'hand_value': value,
+            'hand_name': hand_name,
+            'hand_ranking': hand_ranking,
+            'hand_value': hand_value,
             'money': player.money,
             'current_bet': player.current_bet,
             'bet_to_match': current_bet,
@@ -150,10 +161,10 @@ CURRENT GAME STATE:
 INSTRUCTIONS:
 1. Analyze the situation based on hand strength, pot odds, and win probability
 2. Decide: call, raise, or fold
-3. If raising, specify amount (10-100)
+3. If raising, specify an integer chip amount (no explicit maximum; stay within stack)
 4. Provide brief reasoning
 5. Respond ONLY with JSON in this exact format:
-{{"action": "call/raise/fold", "amount": 50, "reasoning": "your reasoning", "confidence": 0.8}}
+{"action": "call/raise/fold", "amount": 50, "reasoning": "your reasoning", "confidence": 0.8}
 
 JSON RESPONSE:"""
         return prompt
@@ -168,7 +179,7 @@ JSON RESPONSE:"""
                 contents=prompt
             )
             response_text = response.text.strip()
-            print(f"✅ Received response from Gemini")
+            print(f"✅ Received response from Gemini: {response_text}")
             return response_text
 
         except Exception as e:
@@ -193,6 +204,7 @@ JSON RESPONSE:"""
             raise ValueError("Response missing 'action' field")
         if decision['action'] not in ['call', 'raise', 'fold']:
             raise ValueError(f"Invalid action: {decision['action']}")
+        print(f"✅ Parsed Gemini decision: {decision}")
         return decision
 
     def _clean_response(self, text: str) -> str:
@@ -217,18 +229,27 @@ JSON RESPONSE:"""
         action = decision['action']
         amount = decision.get('amount')
         current_bet = game_state.betting_manager.current_round.current_bet
-        amount_to_call = current_bet - player.current_bet
+        amount_to_call = max(0, current_bet - player.current_bet)
+
+        stack = player.money
+        pot = game_state.betting_manager.get_pot()
+        hand_strength = self._get_hand_strength(player.hand)
+
         if action == 'raise':
             if amount is None or amount <= 0:
-                amount = max(20, int(game_state.betting_manager.get_pot() * 0.3))
+                amount = max(int(pot * 0.25), int(stack * 0.07), 10)
             total_needed = amount_to_call + amount
-            if total_needed > player.money:
-                amount = player.money - amount_to_call
+            if total_needed > stack:
+                amount = stack - amount_to_call
                 if amount <= 0:
                     action = 'call'
                     amount = None
         elif action == 'call':
-            amount = None
+            if hand_strength >= 7 and stack > amount_to_call + 10:
+                amount = max(int(pot * 0.2), int(stack * 0.05), 10)
+                action = 'raise'
+            else:
+                amount = None
         elif action == 'fold':
             amount = None
         return action, amount
@@ -253,6 +274,34 @@ JSON RESPONSE:"""
             'reasoning': decision.get('reasoning', ''),
             'confidence': decision.get('confidence', 0.0)
         })
+
+    def _get_hand_strength(self, hand: list) -> int:
+        """Return numeric strength (1-10) for a hand."""
+        hand_eval = HandEvaluator.evaluate_hand(hand)
+        hand_name = hand_eval[0] if isinstance(hand_eval, (list, tuple)) else str(hand_eval)
+        return HandEvaluator.HAND_RANKINGS.get(hand_name, 1)
+
+    def _estimate_win_probability_simple(self, hand_ranking: int) -> float:
+        """Coarse win probability estimate from ranking to keep prompts grounded."""
+        return max(0.05, min(0.97, hand_ranking / 10.5 + 0.05))
+
+    def _get_available_actions(self, player, current_bet: int):
+        """Return legal actions given current bet state."""
+        actions = ['fold']
+        amount_to_call = max(0, current_bet - player.current_bet)
+        if player.money >= amount_to_call:
+            actions.append('call')
+        if player.money > amount_to_call:
+            actions.append('raise')
+        return actions
+
+    def _calculate_pot_odds(self, pot: int, bet_to_call: int) -> float:
+        """Simple pot-odds ratio; returns infinity when nothing to call."""
+        if bet_to_call <= 0:
+            return float('inf')
+        if pot <= 0:
+            return float('inf')
+        return pot / bet_to_call
 
     def get_strategy_name(self) -> str:
         """Get strategy description."""

@@ -62,6 +62,11 @@ class Card:
         self.id = 0
         #self.is_ace = false
 
+    def get_rank_name(self):
+        """Return human-friendly rank label for prompts/UI."""
+        rank_names = {1: "Ace", 11: "Jack", 12: "Queen", 13: "King"}
+        return rank_names.get(self.rank, str(self.rank))
+
 #generate a random card
 def gen_card():
     card = Card()

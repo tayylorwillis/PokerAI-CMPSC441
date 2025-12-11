@@ -120,6 +120,7 @@ class HandEvaluator:
     @staticmethod
     def _has_pair(rank_counts):
         """Check for a pair."""
+        pair_rank = 0
         for rank, count in enumerate(rank_counts, start=2):
             if count == 2:
                 pair_rank = rank
@@ -130,6 +131,7 @@ class HandEvaluator:
     @staticmethod
     def _has_two_pair(rank_counts, first_pair_rank):
         """Check for two pair."""
+        second_pair = 0
         for rank, count in enumerate(rank_counts, start=2):
             if count == 2 and rank != first_pair_rank:
                 second_pair = rank

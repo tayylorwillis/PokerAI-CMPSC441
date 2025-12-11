@@ -57,20 +57,33 @@ function App() {
     });
     setGameState(state);
     const resultMsg = state.result ? ` - ${state.result}` : '';
-    setLog(prev => [...prev, `You ${action}${amount ? ` ${amount}` : ''}`, `Your Balance: $${state.player?.money ?? 0} | Opponent: $${state.opponent?.money ?? 0}${resultMsg}`]);
+    const geminiMsg = state.gemini_bot ? ` | Gemini: $${state.gemini_bot.money}` : '';
+    setLog(prev => [...prev, `You ${action}${amount ? ` ${amount}` : ''}`, `Your Balance: $${state.player?.money ?? 0} | Opponent: $${state.opponent?.money ?? 0}${geminiMsg}${resultMsg}`]);
   };
 
   const handleRaiseConfirm = () => {
-    sendAction('raise', Math.max(0, Number(raiseAmount) || 0));
+    const highestBet = Math.max(
+      gameState?.opponent?.current_bet ?? 0,
+      gameState?.gemini_bot?.current_bet ?? 0
+    );
+    const minRaise = Math.max(0, highestBet - (gameState?.player?.current_bet ?? 0));
+    const finalAmount = Math.max(minRaise, Number(raiseAmount) || 0);
+    sendAction('raise', finalAmount);
     setOverlayVisible(false);
     setRaiseAmount(0);
   };
 
   const adjustRaise = (value) => {
-    if (value === 'reset') setRaiseAmount(0);
-    else setRaiseAmount(prev => Math.max(0, prev + parseInt(value, 10)));
+    const highestBet = Math.max(
+      gameState?.opponent?.current_bet ?? 0,
+      gameState?.gemini_bot?.current_bet ?? 0
+    );
+    const minRaise = Math.max(0, highestBet - (gameState?.player?.current_bet ?? 0));
+    if (value === 'reset') setRaiseAmount(minRaise);
+    else setRaiseAmount(prev => Math.max(minRaise, prev + parseInt(value, 10)));
   };
 
+  const handleCall = () => sendAction('call');
   const handleHold = () => sendAction('hold');
   const handleFold = () => sendAction('fold');
 
@@ -96,6 +109,7 @@ function App() {
 
   const playerCards = gameState?.player?.hole ?? [];
   const opponentCards = gameState?.opponent?.hole ?? [];
+  const geminiCards = gameState?.gemini_bot?.hole ?? [];
 
   const renderCard = (card, idx, size = 'md') => {
     const hidden = card?.hidden;
@@ -132,6 +146,11 @@ function App() {
 
   const status = gameState?.status || 'loading';
   const isFinished = status === 'finished';
+  const highestBet = Math.max(
+    gameState?.opponent?.current_bet ?? 0,
+    gameState?.gemini_bot?.current_bet ?? 0
+  );
+  const needsToCall = highestBet > (gameState?.player?.current_bet ?? 0);
 
   return (
     <div className="App">
@@ -148,8 +167,15 @@ function App() {
         </div>
 
         <div className="action-buttons">
-          <button onClick={() => setOverlayVisible(true)} disabled={isFinished}>Raise</button>
-          <button onClick={handleHold} disabled={isFinished}>Hold</button>
+          <button onClick={() => {
+            const minRaise = Math.max(0, highestBet - (gameState?.player?.current_bet ?? 0));
+            setRaiseAmount(minRaise);
+            setOverlayVisible(true);
+          }} disabled={isFinished}>Raise</button>
+          {needsToCall && !isFinished && (
+            <button onClick={handleCall}>Call ${highestBet - (gameState?.player?.current_bet ?? 0)}</button>
+          )}
+          <button onClick={handleHold} disabled={isFinished || needsToCall}>Hold</button>
           <button onClick={handleFold} disabled={isFinished}>Fold</button>
           {isFinished && (
             <button onClick={startNewHand}>New Hand</button>
@@ -158,6 +184,7 @@ function App() {
         </div>
       </main>
 
+      {/* Player cards - large at bottom */}
       <div className="card-row">
         {playerCards.map((card, idx) => renderCard(card, idx, 'md'))}
       </div>
@@ -168,6 +195,7 @@ function App() {
         alt="Hand Card"
       />
 
+      {/* Player stats - bottom left */}
       <div className="bottom-left-texts">
         <div>Pot: ${gameState?.pot ?? 0}</div>
         <div>Your Total: ${gameState?.player?.money ?? 0}</div>
@@ -176,10 +204,7 @@ function App() {
         <div>Status: {isFinished ? 'Winner!' : status}{gameState?.result ? ` (${gameState.result})` : ''}</div>
       </div>
 
-      <div className="mini-card-column">
-        {playerCards.map((card, idx) => renderCard(card, idx, 'sm'))}
-      </div>
-
+      {/* Opponent - left side */}
       <div className="mini-card-column2">
         {opponentCards.map((card, idx) => renderCard(card, idx, 'sm'))}
       </div>
@@ -191,6 +216,22 @@ function App() {
         </div>
       </div>
 
+      {/* Gemini - right side (mirror of opponent) */}
+      {gameState?.gemini_bot && (
+        <>
+          <div className="mini-card-column">
+            {geminiCards.map((card, idx) => renderCard(card, idx, 'sm'))}
+          </div>
+
+          <div className="opstats-circle2">
+            <div className="opstats-text2">
+              <div>Gemini Total: ${gameState.gemini_bot.money}</div>
+              <div>Gemini Bet: ${gameState.gemini_bot.current_bet}</div>
+            </div>
+          </div>
+        </>
+      )}
+
       {overlayVisible && (
         <div id="overlay">
           <div className="overlay-content">
@@ -199,8 +240,11 @@ function App() {
               type="number"
               id="raiseInput"
               value={raiseAmount}
-              min={0}
-              onChange={(e) => setRaiseAmount(Number(e.target.value))}
+              min={Math.max(0, highestBet - (gameState?.player?.current_bet ?? 0))}
+              onChange={(e) => {
+                const minRaise = Math.max(0, highestBet - (gameState?.player?.current_bet ?? 0));
+                setRaiseAmount(Math.max(minRaise, Number(e.target.value)));
+              }}
             />
             <div className="buttons">
               {[-500, -100, -10, -1, 'reset', 1, 10, 100, 500].map((val, idx) => (

@@ -4,78 +4,12 @@ from player import Player
 from deck import Deck
 from hand_evaluator import HandEvaluator
 from ai_player import BaseAIPlayer
+from llm_logic import GeminiBot
+import os
 
 app = Flask(__name__)
 
-game_pot = Pot()
-player = Player("You", 1000, is_bot=False)
-opponent = BaseAIPlayer("Opponent", 1000, is_bot=True)
-deck = Deck()
-evaluator = HandEvaluator()
-game_status = "waiting"
-player_held = False
-opponent_held = False
-
-
-def card_to_dict(card):
-    rank_names = {1: 'A', 11: 'J', 12: 'Q', 13: 'K'}
-    rank_str = rank_names.get(card.rank, str(card.rank))
-    suit_codes = {
-        'hearts': 'H',
-        'diamonds': 'D',
-        'spades': 'S',
-        'clubs': 'C'
-    }
-    suit_code = suit_codes.get(card.suit.lower(), 'S')
-    if rank_str == '10':
-        card_code = f"0{suit_code}"
-    else:
-        card_code = f"{rank_str}{suit_code}"
-    
-    image_url = f"https://deckofcardsapi.com/static/img/{card_code}.png"
-    
-    return {
-        'rank': rank_str,
-        'suit': card.suit,
-        'image': image_url,
-        'id': card.id
-    }
-
-
-def get_game_state():
-    """Return current game state as JSON."""
-    player_best = evaluator.evaluate_hand(player.hand) if player.hand else None
-    opponent_best = evaluator.evaluate_hand(opponent.hand) if opponent.hand else None
-    
-    state = {
-        'pot': game_pot.get_total(),
-        'status': game_status,
-        'player': {
-            'name': player.name,
-            'money': player.money,
-            'current_bet': player.current_bet,
-            'held': player_held,
-            'hole': [card_to_dict(c) for c in player.hand],
-            'best': {
-                'hand': player_best[0] if player_best else None,
-                'rank': player_best[1] if player_best else None
-            } if player_best else None
-        },
-        'opponent': {
-            'name': opponent.name,
-            'money': opponent.money,
-            'current_bet': opponent.current_bet,
-            'held': opponent_held,
-            'hole': [card_to_dict(c) for c in opponent.hand],
-            'best': {
-                'hand': opponent_best[0] if opponent_best else None,
-                'rank': opponent_best[1] if opponent_best else None
-            } if opponent_best else None
-        },
-        'board': []
-    }
-    
-    return state
+# Using GAME_STATE instead of global variables
 
 
 def card_to_dict(card, hidden=False):
@@ -94,39 +28,66 @@ def card_to_dict(card, hidden=False):
         "image": img_url,
     }
 def evaluate_winner(state):
+    """Evaluate winner among all active players (not folded)."""
     player = state["player"]
     opponent = state["opponent"]
-    result = HandEvaluator.compare_hands(player.hand, opponent.hand)
+    gemini = state.get("gemini_bot")
     
-    p_best = HandEvaluator.evaluate_hand(player.hand)
-    o_best = HandEvaluator.evaluate_hand(opponent.hand)
+    # Get best hands for all players
+    p_best = HandEvaluator.evaluate_hand(player.hand) if player.hand else None
+    o_best = HandEvaluator.evaluate_hand(opponent.hand) if opponent.hand else None
+    g_best = HandEvaluator.evaluate_hand(gemini.hand) if gemini and gemini.hand else None
     
-    if result == 1:
-        winner = "player"
-    elif result == 2:
-        winner = "opponent"
-    else:
-        winner = "tie"
-
-    return winner, p_best, o_best
+    active_players = []
+    if not player.is_folded and p_best:
+        active_players.append(("player", player, p_best))
+    if not opponent.is_folded and o_best:
+        active_players.append(("opponent", opponent, o_best))
+    if gemini and not gemini.is_folded and g_best:
+        active_players.append(("gemini_bot", gemini, g_best))
+    
+    if len(active_players) == 0:
+        return "tie", p_best, o_best, g_best
+    if len(active_players) == 1:
+        return active_players[0][0], p_best, o_best, g_best
+    
+    # Find winner by comparing hands
+    best_player = active_players[0]
+    for i in range(1, len(active_players)):
+        result = HandEvaluator.compare_hands(best_player[1].hand, active_players[i][1].hand)
+        if result == 2:  # Current player beats best
+            best_player = active_players[i]
+    
+    return best_player[0], p_best, o_best, g_best
 
 def make_state():
     deck = Deck()
     deck.reset()
 
     player = Player("You", starting_money=1000, is_bot=False)
-    opponent = Player("Opponent", starting_money=1000, is_bot=True)
+    opponent = BaseAIPlayer("Opponent", money=1000)
+    
+    try:
+        gemini_bot = GeminiBot("Gemini", money=1000, personality="balanced")
+        print("✅ GeminiBot initialized successfully!")
+    except Exception as e:
+        print(f"⚠️ Could not initialize GeminiBot: {e}")
+        print("Using BaseAIPlayer as fallback for third player")
+        gemini_bot = BaseAIPlayer("Gemini (Fallback)", money=1000)
     
     player.receive_hand(deck.deal_hand(5))
     opponent.receive_hand(deck.deal_hand(5))
+    gemini_bot.receive_hand(deck.deal_hand(5))
 
     state = {
         "deck": deck,
         "player": player,
         "opponent": opponent,
+        "gemini_bot": gemini_bot,
         "pot": 0,
         "player_held": False,
         "opponent_held": False,
+        "gemini_held": False,
         "status": "playing",
         "result": None,
     }
@@ -149,35 +110,43 @@ def reset_hand_keep_balances():
 
     player = GAME_STATE["player"]
     opponent = GAME_STATE["opponent"]
+    gemini_bot = GAME_STATE.get("gemini_bot")
 
     player.reset_for_new_round()
     opponent.reset_for_new_round()
+    if gemini_bot:
+        gemini_bot.reset_for_new_round()
 
     GAME_STATE.update({
         "pot": 0,
         "player_held": False,
         "opponent_held": False,
+        "gemini_held": False,
         "status": "playing",
         "result": None,
     })
 
     player.receive_hand(deck.deal_hand(5))
     opponent.receive_hand(deck.deal_hand(5))
+    if gemini_bot:
+        gemini_bot.receive_hand(deck.deal_hand(5))
     return GAME_STATE
 
 
 def serialize_state(state, reveal_opponent=False):
     player = state["player"]
     opponent = state["opponent"]
+    gemini_bot = state.get("gemini_bot")
 
-    if len(player.hand) == 5 and len(opponent.hand) == 5:
-        winner, p_best, o_best = evaluate_winner(state)
+    if len(player.hand) == 5 and len(opponent.hand) == 5 and (not gemini_bot or len(gemini_bot.hand) == 5):
+        winner, p_best, o_best, g_best = evaluate_winner(state)
     else:
         winner = None
         p_best = ("—", 0)
         o_best = ("—", 0)
+        g_best = ("—", 0)
 
-    return {
+    result = {
         "pot": state["pot"],
         "status": state["status"],
         "result": state["result"],
@@ -197,162 +166,28 @@ def serialize_state(state, reveal_opponent=False):
         },
         "winner_preview": winner,
     }
+    
+    if gemini_bot:
+        result["gemini_bot"] = {
+            "money": gemini_bot.money,
+            "current_bet": gemini_bot.current_bet,
+            "hole": [card_to_dict(c, hidden=not reveal_opponent) for c in gemini_bot.hand],
+            "best": {"hand": g_best[0] if g_best else "—", "rank": g_best[1] if g_best else 0},
+            "held": state.get("gemini_held", False),
+        }
+    
+    return result
 
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/api/new-game', methods=['POST'])
-def new_game():
-    """Start a new game and deal initial hands."""
-    global game_status, player_held, opponent_held
-    game_pot.reset()
-    player.reset_for_new_round()
-    opponent.reset_for_new_round()
-    deck.reset()
-    game_status = "playing"
-    player_held = False
-    opponent_held = False
-    
-    player.receive_hand(deck.deal_hand(5))
-    opponent.receive_hand(deck.deal_hand(5))
-    
-    return jsonify(get_game_state())
 
 
-@app.route('/api/new-hand', methods=['POST'])
-def new_hand():
-    """Start a new hand (keeps balances from previous game)."""
-    global game_status, player_held, opponent_held
-    
-    game_pot.reset()
-    player.reset_for_new_round()
-    opponent.reset_for_new_round()
-    deck.reset()
-    game_status = "playing"
-    player_held = False
-    opponent_held = False
-    
-    player.receive_hand(deck.deal_hand(5))
-    opponent.receive_hand(deck.deal_hand(5))
-    
-    return jsonify(get_game_state())
 
 
-@app.route('/api/action', methods=['POST'])
-def action():
-    """Handle player actions: raise, hold, fold."""
-    global game_status, player_held, opponent_held
-    
-    data = request.get_json()
-    action_type = data.get('action')
-    amount = data.get('amount', 0)
-    
-    if action_type == 'raise':
-        if player.can_bet(amount):
-            player.place_bet(amount, game_pot)
-            player_held = False
-            opponent.call(game_pot)
-            opponent_held = True
-    
-    elif action_type == 'hold':
-        player_held = True
-        if not opponent_held:
-            if game_pot.player_chips_in == game_pot.opponent_chips_in:
-                opponent_held = True
-    
-    elif action_type == 'fold':
-        player.is_folded = True
-        opponent.win_pot(game_pot.get_total())
-        game_status = "finished"
-    
-    state = get_game_state()
-    
-    if (player_held and opponent_held) or player.is_folded or opponent.is_folded:
-        if not player.is_folded and not opponent.is_folded:
-            player_result = evaluator.evaluate_hand(player.hand)
-            opponent_result = evaluator.evaluate_hand(opponent.hand)
-            player_hand_rank = evaluator.HAND_RANKINGS.get(player_result[0], 0)
-            opponent_hand_rank = evaluator.HAND_RANKINGS.get(opponent_result[0], 0)
-            if player_hand_rank > opponent_hand_rank:
-                player.win_pot(game_pot.get_total())
-                state['result'] = 'player'
-            elif opponent_hand_rank > player_hand_rank:
-                opponent.win_pot(game_pot.get_total())
-                state['result'] = 'opponent'
-            elif player_result[1] > opponent_result[1]:
-                player.win_pot(game_pot.get_total())
-                state['result'] = 'player'
-            elif opponent_result[1] > player_result[1]:
-                opponent.win_pot(game_pot.get_total())
-                state['result'] = 'opponent'
-            else:
-                half_pot = game_pot.get_total() // 2
-                player.win_pot(half_pot)
-                opponent.win_pot(half_pot)
-                state['result'] = 'tie'
-        
-        game_status = "finished"
-        state['status'] = "finished"
-    
-    return jsonify(state)
 
-@app.route('/api/ai_action', methods=['POST'])
-def ai_action():
-    """Handle ai_player actions: raise, hold, fold, call"""
-    global game_status, player_held, opponent_held
-    
-    #data = request.get_json()
-    action_type, amount = opponent.decide_action(game_status)
-    
-    if action_type == 'raise':
-        opponent.place_bet(amount, game_pot)
-        opponent_held = False
-        player.call(game_pot)           #does this force player to call??? what if they don't want to
-        player_held = True
-    
-    elif action_type == 'hold':
-        opponent_held = True
-        if not player_held:
-            if game_pot.opponent_chips_in == game_pot.player_chips_in:
-                player_held = True
-    
-    elif action_type == 'fold':
-        opponent.is_folded = True
-        player.win_pot(game_pot.get_total())
-        game_status = "finished"
-    
-    state = get_game_state()
-    
-    if (player_held and opponent_held) or player.is_folded or opponent.is_folded:
-        if not player.is_folded and not opponent.is_folded:
-            player_result = evaluator.evaluate_hand(player.hand)
-            opponent_result = evaluator.evaluate_hand(opponent.hand)
-            player_hand_rank = evaluator.HAND_RANKINGS.get(player_result[0], 0)
-            opponent_hand_rank = evaluator.HAND_RANKINGS.get(opponent_result[0], 0)
-            if player_hand_rank > opponent_hand_rank:
-                player.win_pot(game_pot.get_total())
-                state['result'] = 'player'
-            elif opponent_hand_rank > player_hand_rank:
-                opponent.win_pot(game_pot.get_total())
-                state['result'] = 'opponent'
-            elif player_result[1] > opponent_result[1]:
-                player.win_pot(game_pot.get_total())
-                state['result'] = 'player'
-            elif opponent_result[1] > player_result[1]:
-                opponent.win_pot(game_pot.get_total())
-                state['result'] = 'opponent'
-            else:
-                half_pot = game_pot.get_total() // 2
-                player.win_pot(half_pot)
-                opponent.win_pot(half_pot)
-                state['result'] = 'tie'
-        
-        game_status = "finished"
-        state['status'] = "finished"
-    
-    return jsonify(state)
 
 @app.post('/api/new-game')
 def api_new_game():
@@ -373,6 +208,102 @@ def api_new_hand():
 def api_state():
     return jsonify(serialize_state(GAME_STATE, reveal_opponent=GAME_STATE.get("status") == "finished"))
 
+def get_highest_bet(state):
+    """Get the highest current bet among all players."""
+    bets = [state["player"].current_bet, state["opponent"].current_bet]
+    if state.get("gemini_bot"):
+        bets.append(state["gemini_bot"].current_bet)
+    return max(bets)
+
+def all_players_held_or_folded(state):
+    """Check if all active players have held or folded."""
+    player_done = state.get("player_held") or state["player"].is_folded
+    opponent_done = state.get("opponent_held") or state["opponent"].is_folded
+    gemini_done = True
+    if state.get("gemini_bot"):
+        gemini_done = state.get("gemini_held") or state["gemini_bot"].is_folded
+    return player_done and opponent_done and gemini_done
+
+
+def process_ai_turns_in_order(state):
+    """Always act in order: human already acted -> opponent bot -> Gemini."""
+    opponent = state["opponent"]
+    gemini_bot = state.get("gemini_bot")
+
+    highest_bet = get_highest_bet(state)
+
+    if hasattr(opponent, 'decide_action') and not state.get("opponent_held"):
+        process_ai_decision(opponent, "opponent", state, highest_bet)
+        highest_bet = get_highest_bet(state)
+
+    if gemini_bot and hasattr(gemini_bot, 'decide_action') and not state.get("gemini_held"):
+        process_ai_decision(gemini_bot, "gemini", state, highest_bet)
+
+def process_ai_decision(ai_player, ai_name, state, _highest_bet):
+    """Process an AI player's decision."""
+    class MockBettingManager:
+        def __init__(self, pot, current_bet):
+            self.pot = pot
+            self.current_round = type('obj', (object,), {'current_bet': current_bet})()
+        
+        def get_pot(self):
+            return self.pot
+    
+    class MockGameState:
+        def __init__(self, pot, current_bet):
+            self.betting_manager = MockBettingManager(pot, current_bet)
+    
+    simple_state = {
+        'pot': state["pot"],
+        'player_bet': state["player"].current_bet,
+        'opponent_bet': state["opponent"].current_bet
+    }
+    if state.get("gemini_bot"):
+        simple_state['gemini_bet'] = state["gemini_bot"].current_bet
+    
+    current_highest_for_mock = get_highest_bet(state)
+    gemini_state = MockGameState(state["pot"], current_highest_for_mock)
+    
+    try:
+        if isinstance(ai_player, GeminiBot):
+            ai_action, ai_amount = ai_player.decide_action(gemini_state, ai_player)
+        else:
+            ai_action, ai_amount = ai_player.decide_action(simple_state, ai_player)
+
+        current_highest = get_highest_bet(state)
+
+        if ai_action == "raise" and ai_amount:
+            call_needed = max(0, current_highest - ai_player.current_bet)
+            total_bet = call_needed + max(0, ai_amount)
+            ai_bet = ai_player.place_bet(min(total_bet, ai_player.money))
+            state["pot"] += ai_bet
+            state[f"{ai_name}_held"] = False
+            state["player_held"] = False
+            state["opponent_held"] = False
+            if state.get("gemini_bot"):
+                state["gemini_held"] = False
+            state[f"{ai_name}_held"] = False
+
+        elif ai_action == "call":
+            call_needed = max(0, current_highest - ai_player.current_bet)
+            if call_needed > 0:
+                call_amt = ai_player.place_bet(min(call_needed, ai_player.money))
+                state["pot"] += call_amt
+            state[f"{ai_name}_held"] = True
+
+        elif ai_action == "fold":
+            ai_player.is_folded = True
+            state[f"{ai_name}_held"] = True
+
+    except Exception as e:
+        print(f"AI decision error for {ai_name}: {e}")
+        current_highest = get_highest_bet(state)
+        call_needed = max(0, current_highest - ai_player.current_bet)
+        if call_needed > 0 and ai_player.money >= call_needed:
+            call_amt = ai_player.place_bet(min(call_needed, ai_player.money))
+            state["pot"] += call_amt
+        state[f"{ai_name}_held"] = True
+
 @app.post('/api/action')
 def api_action():
     global GAME_STATE
@@ -385,29 +316,38 @@ def api_action():
 
     player = GAME_STATE["player"]
     opponent = GAME_STATE["opponent"]
+    gemini_bot = GAME_STATE.get("gemini_bot")
 
     if action == "raise":
         bet = player.place_bet(max(0, amount))
         GAME_STATE["pot"] += bet
         GAME_STATE["player_held"] = False
-    elif action == "fold":
-        GAME_STATE["status"] = "finished"
-        GAME_STATE["result"] = "opponent"
-        opponent.win_pot(GAME_STATE["pot"])
-        GAME_STATE["pot"] = 0
-        return jsonify(serialize_state(GAME_STATE, reveal_opponent=True))
-    elif action == "hold":
-        GAME_STATE["player_held"] = True
-    if GAME_STATE.get("player_held", False):
-        GAME_STATE["opponent_held"] = True
-    else:
-        call_needed = player.current_bet - opponent.current_bet
-        if call_needed > 0 and opponent.money > 0:
-            call_amt = opponent.place_bet(min(call_needed, opponent.money))
-            GAME_STATE["pot"] += call_amt
         GAME_STATE["opponent_held"] = False
-    if GAME_STATE.get("player_held", False) and GAME_STATE.get("opponent_held", False):
-        winner, _, _ = evaluate_winner(GAME_STATE)
+        GAME_STATE["gemini_held"] = False
+        process_ai_turns_in_order(GAME_STATE)
+            
+    elif action == "call":
+        highest_bet = get_highest_bet(GAME_STATE)
+        call_needed = highest_bet - player.current_bet
+        if call_needed > 0:
+            call_amt = player.place_bet(min(call_needed, player.money))
+            GAME_STATE["pot"] += call_amt
+        GAME_STATE["player_held"] = True
+        
+    elif action == "fold":
+        player.is_folded = True
+        GAME_STATE["player_held"] = True
+        
+    elif action == "hold":
+        highest_bet = get_highest_bet(GAME_STATE)
+        if highest_bet > player.current_bet:
+            return jsonify(serialize_state(GAME_STATE, reveal_opponent=False))
+        
+        GAME_STATE["player_held"] = True
+        process_ai_turns_in_order(GAME_STATE)
+    
+    if all_players_held_or_folded(GAME_STATE):
+        winner, _, _, _ = evaluate_winner(GAME_STATE)
         GAME_STATE["status"] = "finished"
         GAME_STATE["result"] = winner
 
@@ -415,9 +355,18 @@ def api_action():
             player.win_pot(GAME_STATE["pot"])
         elif winner == "opponent":
             opponent.win_pot(GAME_STATE["pot"])
-        else:
-            player.win_pot(GAME_STATE["pot"] // 2)
-            opponent.win_pot(GAME_STATE["pot"] - GAME_STATE["pot"] // 2)
+        elif winner == "gemini_bot" and gemini_bot:
+            gemini_bot.win_pot(GAME_STATE["pot"])
+        else:  # tie
+            active_count = sum([not p.is_folded for p in [player, opponent, gemini_bot] if p])
+            if active_count > 0:
+                share = GAME_STATE["pot"] // active_count
+                if not player.is_folded:
+                    player.win_pot(share)
+                if not opponent.is_folded:
+                    opponent.win_pot(share)
+                if gemini_bot and not gemini_bot.is_folded:
+                    gemini_bot.win_pot(share)
         GAME_STATE["pot"] = 0
         return jsonify(serialize_state(GAME_STATE, reveal_opponent=True))
 
