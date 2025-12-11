@@ -7,6 +7,7 @@ import requests
 import re
 from typing import Tuple, Optional, Dict
 from ai_player import BaseAIPlayer
+from hand_evaluator import HandEvaluator
 
 model = "qwen2.5"
 
@@ -17,7 +18,17 @@ class OllamaBot(BaseAIPlayer):
     """
 
     SYSTEM_PROMPTS = {
-        "add these"
+        "conservative": """You are a conservative poker player. You play tight and only bet on strong hands. 
+        You fold weak hands quickly and avoid risky situations. You prefer to wait for premium hands 
+        before committing chips.""",
+
+        "balanced": """You are a balanced poker player. You mix conservative and aggressive play 
+        depending on the situation. You consider pot odds, hand strength, and position. 
+        You can bluff occasionally but prefer solid play.""",
+
+        "aggressive": """You are an aggressive poker player. You bet and raise frequently to apply 
+        pressure. You're willing to bluff and take risks. You use aggression to push opponents 
+        out of pots and build big stacks quickly."""
     }
 
     def __init__(self, name: str, money: int = 1000,
@@ -72,12 +83,93 @@ class OllamaBot(BaseAIPlayer):
         Returns:
             Tuple of (action, amount) where action is 'call', 'raise', or 'fold'
         """
-        # TODO: implement
+        try:
+            context = self._prepare_context(game_state, player)
+
+            prompt = self._build_prompt(context)
+
+            response_text = self._call_ollama(prompt)
+
+            decision = self._parse_response(response_text)
+
+            validated_action, validated_amount = self._validate_decision(
+                decision, game_state, player
+            )
+
+            self._log_decision(player, context, decision)
+
+            return validated_action, validated_amount
+
+        except Exception as e:
+            print(f"Ollama error: {e}, using fallback strategy")
+            return self._fallback_decision(game_state, player)
 
 
     def _prepare_context(self, game_state, player) -> Dict:
         """Prepare game context for LLM."""
-        # TODO: implement
+        # Evaluate hand
+        ranking, value, name = HandEvaluator.evaluate_hand(player.hand)
+
+        # Get betting info
+        pot = game_state.betting_manager.get_pot()
+        current_bet = game_state.betting_manager.current_round.current_bet
+        amount_to_call = current_bet - player.current_bet
+
+        # Calculate pot odds
+        pot_odds = self._calculate_pot_odds(pot, amount_to_call) if amount_to_call > 0 else float('inf')
+
+        # Get available actions
+        available_actions = self._get_available_actions(player, current_bet)
+
+        # Estimate win probability
+        win_probability = self._estimate_win_probability(ranking)
+
+        return {
+            'hand': player.hand,
+            'hand_name': name,
+            'hand_ranking': ranking,
+            'hand_value': value,
+            'money': player.money,
+            'current_bet': player.current_bet,
+            'bet_to_match': current_bet,
+            'amount_to_call': amount_to_call,
+            'pot': pot,
+            'pot_odds': pot_odds,
+            'available_actions': available_actions,
+            'win_probability': win_probability
+        }
+
+    def _build_prompt(self, context: Dict) -> str:
+        """Build decision prompt for LLM."""
+        hand_str = ", ".join([f"{card.get_rank_name()} of {card.suit}"
+                              for card in context['hand']])
+
+        prompt = f"""POKER DECISION TASK
+
+        SYSTEM: {self.system_prompt}
+
+        CURRENT GAME STATE:
+        - Your hand: {hand_str}
+        - Hand type: {context['hand_name']} (strength: {context['hand_ranking']}/10)
+        - Your chips: ${context['money']}
+        - Current bet to match: ${context['bet_to_match']}
+        - Your current bet: ${context['current_bet']}
+        - Amount to call: ${context['amount_to_call']}
+        - Pot size: ${context['pot']}
+        - Pot odds: {context['pot_odds']:.2f}:1
+        - Estimated win probability: {context['win_probability']:.1%}
+        - Available actions: {', '.join(context['available_actions'])}
+
+        INSTRUCTIONS:
+        1. Analyze the situation based on hand strength, pot odds, and win probability
+        2. Decide: call, raise, or fold
+        3. If raising, specify amount (10-100)
+        4. Provide brief reasoning
+        5. Respond ONLY with JSON, no other text
+
+        JSON RESPONSE:"""
+
+        return prompt
 
 
     def _call_ollama(self, prompt: str) -> str:
@@ -160,11 +252,46 @@ class OllamaBot(BaseAIPlayer):
 
     def _validate_decision(self, decision: Dict, game_state, player) -> Tuple[str, Optional[int]]:
         """Validate and adjust LLM decision to be legal."""
-        # TODO: implement
+        action = decision['action']
+        amount = decision.get('amount')
+
+        current_bet = game_state.betting_manager.current_round.current_bet
+        amount_to_call = current_bet - player.current_bet
+
+        # Validate raise amount
+        if action == 'raise':
+            if amount is None or amount <= 0:
+                # Use default raise amount
+                amount = max(20, int(game_state.betting_manager.get_pot() * 0.3))
+
+            # Ensure we can afford it
+            total_needed = amount_to_call + amount
+            if total_needed > player.money:
+                # All-in
+                amount = player.money - amount_to_call
+                if amount <= 0:
+                    # Can't raise, just call
+                    action = 'call'
+                    amount = None
+
+        elif action == 'call':
+            amount = None
+
+        elif action == 'fold':
+            amount = None
+
+        return action, amount
 
     def _fallback_decision(self, game_state, player) -> Tuple[str, Optional[int]]:
         """Simple rule-based fallback when LLM fails."""
-        # TODO: implement
+        hand_strength = self._get_hand_strength(player.hand)
+
+        if hand_strength >= 7:
+            return 'raise', 50
+        elif hand_strength >= 4:
+            return 'call', None
+        else:
+            return 'fold', None
 
     def _estimate_win_probability(self, hand_ranking: int) -> float:
         """Rough estimate of win probability based on hand ranking."""
@@ -184,7 +311,13 @@ class OllamaBot(BaseAIPlayer):
 
     def _log_decision(self, player, context: Dict, decision: Dict):
         """Log decision for analysis."""
-        # TODO: implement
+        self.decision_history.append({
+            'hand': context['hand_name'],
+            'action': decision['action'],
+            'amount': decision.get('amount'),
+            'reasoning': decision.get('reasoning', ''),
+            'confidence': decision.get('confidence', 0.0)
+        })
 
     def get_strategy_name(self) -> str:
         """Get strategy description."""

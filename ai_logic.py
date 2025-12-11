@@ -12,15 +12,16 @@ class AIBot(BaseAIPlayer):
     with some randomness added.
     """
 
-    def __init__(self, money=1000, aggression=0.5):
+    def __init__(self, name="AI Bot", money=1000, aggression=0.5):
         """
         Initialize bot.
 
         Args:
+            name: Bot name (default: "AI Bot")
             money: Starting money
-            aggression: Aggression level 0.0-1.0 (higher = more likely to raise)
+            aggression: Aggression level 0.0-1.0
         """
-        super().__init__(money)
+        super().__init__(name, money)
         self.aggression = max(0.0, min(1.0, aggression))
 
     def decide_action(self, game_state, player):
