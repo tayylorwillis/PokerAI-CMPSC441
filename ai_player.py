@@ -5,8 +5,6 @@ Base AI player - Abstract base class for AI implementations
 
 from abc import ABC, abstractmethod
 from typing import Tuple, Optional, List
-from hand_evaluator import win_prob
-from app import get_game_state
 import random
 
 
@@ -31,77 +29,89 @@ class BaseAIPlayer(ABC):
         self.current_bet = 0
         self.is_folded = False
         self.is_active = True  # Player is still in the game
-        #very naive, change later
-        self.willing_to_bet = int(self.money * win_prob(hand))    #set max willing to bet as (prob of win)percent of remaining money
 
-    @abstractmethod
-    def decide_action(self, game_state) -> Tuple[str, Optional[int]]:
+    def _calculate_willing_to_bet(self):
+        """Calculate how much AI is willing to bet based on hand strength."""
+        if not self.hand or len(self.hand) < 5:
+            return 0
+        from hand_evaluator import win_prob
+        prob = win_prob(self.hand)
+        return int(self.money * prob)
+
+    def decide_action(self, game_state, player) -> Tuple[str, Optional[int]]:
         """
         Decide what action to take based on current game state.
 
         Args:
-            game_state: GameState object with full game information including:
-                - Current pot size
-                - Current betting round
-                - Other players' states
-                - Betting manager
+            game_state: Dict with game information:
+                - pot: Current pot size
+                - player_bet: Human player's current bet
+                - opponent_bet: AI opponent's current bet
             player: Player object representing this AI, containing:
-                - Current hand
-                - Current chip stack
-                - Current bet amount
-                - Status (folded, all-in, etc.)
+                - hand: Current hand
+                - money: Current chip stack
+                - current_bet: Current bet amount
+                - is_folded: Folded status
 
         Returns:
             tuple: (action, amount) where:
                 - action (str): 'call', 'raise', or 'fold'
                 - amount (int|None): Raise amount if action is 'raise', None otherwise
-        """
-        '''
+        
         Call when: cost to win <= remainder willing to bet
         Fold when: cost to win >= remainder willing to bet
         Raise when: cost to win <= remainder willing to bet (rand 50/50 chance whether to call or raise)
         Hold when: cost to win >= remainder willing to bet
-        Willing to bet = win_prob
+        Willing to bet = win_prob * remaining money
         amount_to_call is effectively cost of win at given turn
-        '''
-        #state = json.loads(get_game_state())
-
+        """
+        # Calculate willing to bet based on hand strength
+        willing_to_bet = self._calculate_willing_to_bet()
         already_bet = self.start_money - self.money
-        remaining_willing_to_bet = self.willing_to_bet - already_bet
+        remaining_willing_to_bet = willing_to_bet - already_bet
 
-        if (remaining_willing_to_bet == 0):
-            return "fold"
+        if remaining_willing_to_bet <= 0:
+            return ("fold", None)
 
-        #curr_pot = state["pot"]
-        curr_pot = game_status["pot"]
-
-        #check if calling is appropriate and how much is needed to call.
-        if (game_status[player["held"]] == False):
-            amount_to_call = game_status[player["current_bet"]] - game_status[opponent["current_bet"]]
-        if (game_status[player["held"]] == True):
-            amount_to_call = 0              #call is not appropriate here
+        # Get pot and betting info from game_state
+        curr_pot = game_state.get("pot", 0)
+        player_bet = game_state.get("player_bet", 0)
+        opponent_bet = game_state.get("opponent_bet", 0)
         
-        #if willing to keep playing and call available, choose randomly whether to call or raise
-        #this will help prevent player from seeing behavior pattern
-        if (amount_to_call > 0 and amount_to_call < remaining_willing_to_bet):
+        # Calculate amount needed to call
+        amount_to_call = player_bet - opponent_bet
+        
+        # If amount_to_call is negative, we're ahead in betting
+        if amount_to_call < 0:
+            amount_to_call = 0
+
+        # If willing to keep playing and call is available
+        if amount_to_call > 0 and amount_to_call <= remaining_willing_to_bet:
             choices = ["call", "raise"]
             decision = random.choice(choices)
-
-        #if willing to keep playing and call not available, choose randomly whether to hold or raise
-        #this will help prevent player from seeing behavior pattern
-        if (amount_to_call == 0):
+            
+            if decision == "call":
+                return ("call", None)
+            else:  # raise
+                raise_amount = random.randint(1, remaining_willing_to_bet)
+                return ("raise", raise_amount)
+        
+        # If no call needed (we're matched or ahead)
+        elif amount_to_call == 0:
             choices = ["hold", "raise"]
             decision = random.choice(choices)
-
-        if (decision == "call"):
-            return "call"
-
-        if (decision == "raise"):
-            raise_amount = random.randint(1, remaining_willing_to_bet)
-            return "raise", raise_amount
+            
+            if decision == "hold":
+                return ("call", None)  # "hold" maps to "call" with no amount
+            else:  # raise
+                raise_amount = random.randint(1, remaining_willing_to_bet)
+                return ("raise", raise_amount)
+        
+        # Amount to call exceeds what we're willing to bet
+        else:
+            return ("fold", None)
         
 
-    @abstractmethod
     def get_strategy_name(self) -> str:
         """
         Get the name/description of this AI strategy.
@@ -112,9 +122,7 @@ class BaseAIPlayer(ABC):
         Returns:
             str: Strategy name or description
         """
-        #do this better later
-        strategy = "This AI agent's strategy is to evaluate the likelihood that its hand will win and make bets corresponding to this liklihood."
-        print(strategy)
+        strategy = "This AI agent's strategy is to evaluate the likelihood that its hand will win and make bets corresponding to this likelihood."
         return strategy
 #here to helper curr working on
 
