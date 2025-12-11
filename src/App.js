@@ -3,12 +3,28 @@ import './App.css';
 
 const cardBack = 'https://i.pinimg.com/originals/ce/ac/76/ceac7651e78ef135370a8a236580201a.png';
 
+const suitSymbols = {
+  hearts: '♥',
+  diamonds: '♦',
+  clubs: '♣',
+  spades: '♠',
+};
+
+const faceCardImages = {
+  1: '/Taylor.png', // Ace
+  13: '/Dylan.png', // King
+  12: '/Alex.png',  // Queen
+  11: '/Stew.png',  // Jack
+  10: '/Sam.png',   // Ten
+};
+
 function App() {
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [raiseAmount, setRaiseAmount] = useState(0);
   const [log, setLog] = useState([]);
   const [gameState, setGameState] = useState(null);
   const logRef = useRef(null);
+  const audioRef = useRef(null);
 
   const fetchJson = async (url, opts = {}) => {
     const res = await fetch(url, {
@@ -68,12 +84,49 @@ function App() {
     loadNewGame();
   }, []);
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.3;
+      audioRef.current.play().catch(() => {
+        // Autoplay prevented by browser; user interaction required
+      });
+    }
+  }, []);
+
   const playerCards = gameState?.player?.hole ?? [];
   const opponentCards = gameState?.opponent?.hole ?? [];
 
   const renderCard = (card, idx, size = 'md') => {
     const hidden = card?.hidden;
-    const src = hidden ? cardBack : card?.image || cardBack;
+    if (hidden) {
+      return <img key={idx} src={cardBack} alt="Card back" className={size === 'sm' ? 'sm' : ''} />;
+    }
+
+    const rank = card?.rank;
+    const suit = card?.suit;
+    const customImg = faceCardImages[rank];
+
+    if (customImg) {
+      const suitSymbol = suitSymbols[suit] || '';
+      const suitClass = suit === 'hearts' || suit === 'diamonds' ? 'red' : 'black';
+      const rankLabel = rank === 1 ? 'A' : rank === 13 ? 'K' : rank === 12 ? 'Q' : rank === 11 ? 'J' : '10';
+      return (
+        <div key={idx} className={`custom-card ${size === 'sm' ? 'sm' : 'md'}`}>
+          <img src={customImg} alt={`Card ${rankLabel}`} />
+          <div className={`corner-label top ${suitClass}`}>
+            <span className="rank-text">{rankLabel}</span>
+            <span className="suit-text">{suitSymbol}</span>
+          </div>
+          <div className={`corner-label bottom ${suitClass}`}>
+            <span className="rank-text">{rankLabel}</span>
+            <span className="suit-text">{suitSymbol}</span>
+          </div>
+        </div>
+      );
+    }
+
+    const src = card?.image || cardBack;
     return <img key={idx} src={src} alt={`Card ${idx + 1}`} className={size === 'sm' ? 'sm' : ''} />;
   };
 
@@ -82,6 +135,7 @@ function App() {
 
   return (
     <div className="App">
+      <audio ref={audioRef} src="/music.mp3" />
       <header>
         <h1>Let's Go Kambling!</h1>
       </header>
