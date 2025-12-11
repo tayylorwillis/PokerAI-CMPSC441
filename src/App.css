@@ -309,3 +309,41 @@ img.sm {
   width: 65px;
   height: auto;
 }
+
+.page {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.back-stacks {
+  display: flex;
+  gap: 5.4px;
+  justify-content: center;
+  align-items: flex-end;
+  margin-bottom: 40px; /* space for front-layer */
+}
+
+.front-stacks {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5.4px;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.chip-stack {
+  position: relative;
+}
+
+.chip {
+  position: absolute;
+  border-radius: 50%;
+}
+
