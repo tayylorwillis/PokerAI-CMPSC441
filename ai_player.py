@@ -35,7 +35,7 @@ class BaseAIPlayer(ABC):
         self.willing_to_bet = int(self.money * win_prob(hand))    #set max willing to bet as (prob of win)percent of remaining money
 
     @abstractmethod
-    def decide_action(self, game_state, player) -> Tuple[str, Optional[int]]:
+    def decide_action(self, game_state) -> Tuple[str, Optional[int]]:
         """
         Decide what action to take based on current game state.
 
@@ -64,7 +64,7 @@ class BaseAIPlayer(ABC):
         Willing to bet = win_prob
         amount_to_call is effectively cost of win at given turn
         '''
-        state = json.loads(get_game_state())
+        #state = json.loads(get_game_state())
 
         already_bet = self.start_money - self.money
         remaining_willing_to_bet = self.willing_to_bet - already_bet
@@ -72,12 +72,13 @@ class BaseAIPlayer(ABC):
         if (remaining_willing_to_bet == 0):
             return "fold"
 
-        curr_pot = state["pot"]
+        #curr_pot = state["pot"]
+        curr_pot = game_status["pot"]
 
         #check if calling is appropriate and how much is needed to call.
-        if (state[player["held"]] == False):
-            amount_to_call = state[player["current_bet"]] - state[opponent["current_bet"]]
-        if (state[player["held"]] == True):
+        if (game_status[player["held"]] == False):
+            amount_to_call = game_status[player["current_bet"]] - game_status[opponent["current_bet"]]
+        if (game_status[player["held"]] == True):
             amount_to_call = 0              #call is not appropriate here
         
         #if willing to keep playing and call available, choose randomly whether to call or raise
@@ -169,6 +170,7 @@ class BaseAIPlayer(ABC):
             float: Pot odds ratio (bet_to_call:pot)
                 - Returns infinity if bet_to_call is 0
         """
+        #currently not being used
         if bet_to_call == 0:
             return float('inf')
         if pot == 0:
@@ -194,6 +196,7 @@ class BaseAIPlayer(ABC):
                 - Positive = profitable to call
                 - Negative = not profitable to call
         """
+        #currently not being used
         pot_after_call = pot + bet_to_call
         expected_winnings = win_probability * pot_after_call
         expected_loss = (1 - win_probability) * bet_to_call
@@ -225,6 +228,7 @@ class BaseAIPlayer(ABC):
 
     def bet_amount():
         """Choose how much to bet"""
+        #NOT CURRENTLY BEING USED
         standard = 1000                         #since players all start with 1000, use this as point of comparison
         prob_win = win_prob(hand)                   #find likelihood of winning hand
         max_bet = int(self.money * prob_win)    #set max willing to bet as prob of win percent of remaining money

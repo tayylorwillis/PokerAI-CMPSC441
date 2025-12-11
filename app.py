@@ -3,12 +3,13 @@ from game_logic import Pot, gen_card
 from player import Player
 from deck import Deck
 from hand_evaluator import HandEvaluator
+from ai_player import BaseAIPlayer
 
 app = Flask(__name__)
 
 game_pot = Pot()
 player = Player("You", 1000, is_bot=False)
-opponent = Player("Opponent", 1000, is_bot=True)
+opponent = BaseAIPlayer("Opponent", 1000, is_bot=True)
 deck = Deck()
 evaluator = HandEvaluator()
 game_status = "waiting"
@@ -176,6 +177,61 @@ def action():
     
     return jsonify(state)
 
+@app.route('/api/ai_action', methods=['POST'])
+def ai_action():
+    """Handle ai_player actions: raise, hold, fold, call"""
+    global game_status, player_held, opponent_held
+    
+    #data = request.get_json()
+    action_type, amount = opponent.decide_action(game_status)
+    
+    if action_type == 'raise':
+        opponent.place_bet(amount, game_pot)
+        opponent_held = False
+        player.call(game_pot)           #does this force player to call??? what if they don't want to
+        player_held = True
+    
+    elif action_type == 'hold':
+        opponent_held = True
+        if not player_held:
+            if game_pot.opponent_chips_in == game_pot.player_chips_in:
+                player_held = True
+    
+    elif action_type == 'fold':
+        opponent.is_folded = True
+        player.win_pot(game_pot.get_total())
+        game_status = "finished"
+    
+    state = get_game_state()
+    
+    if (player_held and opponent_held) or player.is_folded or opponent.is_folded:
+        if not player.is_folded and not opponent.is_folded:
+            player_result = evaluator.evaluate_hand(player.hand)
+            opponent_result = evaluator.evaluate_hand(opponent.hand)
+            player_hand_rank = evaluator.HAND_RANKINGS.get(player_result[0], 0)
+            opponent_hand_rank = evaluator.HAND_RANKINGS.get(opponent_result[0], 0)
+            if player_hand_rank > opponent_hand_rank:
+                player.win_pot(game_pot.get_total())
+                state['result'] = 'player'
+            elif opponent_hand_rank > player_hand_rank:
+                opponent.win_pot(game_pot.get_total())
+                state['result'] = 'opponent'
+            elif player_result[1] > opponent_result[1]:
+                player.win_pot(game_pot.get_total())
+                state['result'] = 'player'
+            elif opponent_result[1] > player_result[1]:
+                opponent.win_pot(game_pot.get_total())
+                state['result'] = 'opponent'
+            else:
+                half_pot = game_pot.get_total() // 2
+                player.win_pot(half_pot)
+                opponent.win_pot(half_pot)
+                state['result'] = 'tie'
+        
+        game_status = "finished"
+        state['status'] = "finished"
+    
+    return jsonify(state)
 
 if __name__ == '__main__':
     app.run(debug=True)
