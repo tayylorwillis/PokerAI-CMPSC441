@@ -67,11 +67,71 @@ main {
 
 .card-row img {
   width: 194px;
+  aspect-ratio: 226 / 314;
   height: auto;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   border: 2px solid goldenrod;
 }
+
+.custom-card {
+  position: relative;
+  display: inline-block;
+  background: #fff;
+  overflow: hidden;
+}
+
+.custom-card.md {
+  width: 194px;
+  aspect-ratio: 226 / 314;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  border: 2px solid goldenrod;
+}
+
+.custom-card.sm {
+  width: 65px;
+  aspect-ratio: 226 / 314;
+  border-radius: 6px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  border: 1px solid goldenrod;
+}
+
+.custom-card.md img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.custom-card.sm img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.corner-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  text-shadow: 0 0 6px rgba(0,0,0,0.6);
+}
+
+.corner-label.top { top: 6px; left: 8px; align-items: flex-start; }
+.corner-label.bottom { bottom: 6px; right: 8px; align-items: flex-end; }
+
+.corner-label .rank-text { font-weight: 800; }
+.corner-label .suit-text { font-weight: 700; }
+
+
+.custom-card.md .corner-label .rank-text { font-size: 24px; }
+.custom-card.md .corner-label .suit-text { font-size: 18px; }
+
+.custom-card.sm .corner-label .rank-text { font-size: 12px; }
+.custom-card.sm .corner-label .suit-text { font-size: 10px; }
+
+.corner-label.red { color: #d23; }
+.corner-label.black { color: #111; }
 
 .hand-card {
   position: fixed;
@@ -118,6 +178,7 @@ main {
 
 .mini-card-column img {
   width: 65px;
+  aspect-ratio: 226 / 314;
   height: auto;
   box-shadow: 0 3px 8px rgba(0,0,0,0.5);
 }
@@ -135,6 +196,7 @@ main {
 
 .mini-card-column2 img {
   width: 65px;
+  aspect-ratio: 226 / 314;
   height: auto;
   box-shadow: 0 3px 8px rgba(0,0,0,0.5);
 }
