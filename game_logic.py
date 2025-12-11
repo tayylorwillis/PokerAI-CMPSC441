@@ -1,38 +1,58 @@
 """"
-Goals for game_logic:
-generate player hands
-assign hands to players
-detect hand types (ace high)
-get_hand()
-initiate who starts (not our agent for now)
-operate the changing of turns
-take_turn() func
-call()
-fold()
-raise()
-user prompting for user turn
-mode setting for bot v bot or bot v user?
-initialize starting money, will use a var for now,
-take prompt from user later
-ace 14 for now, add is_ace later
-
-NOT: (this is a note to self because I Stew 
-struggle to remember what goes where and will
-start putting everything here otherwise)
-win likelihood for bot logic
-turn logic/decision making for bot
-"""
-
-"""
 A:14
 K:13
 Q:12
 J:11
 10:10...
+
+add pot tracking, as well as call/raise/fold
 """
 
 import random
-import array
+#import array
+
+class Pot:
+    def __init__(self, pot_sum1 = 0):
+        self.pot_sum = pot_sum1
+        self.last_raise = 0
+        self.player_chips_in = 0  # how many chips player has in current pot
+        self.opponent_chips_in = 0  # how many chips opponent has in current pot
+
+    def add_bet(self, num, who):
+        """Add a bet to the pot from either player or opponent."""
+        if who == "opponent":
+            self.opponent_chips_in += num
+        elif who == "player":
+            self.player_chips_in += num
+        self.pot_sum += num
+        self.last_raise = num
+        return num
+    
+    def get_call_amount(self, who):
+        """Calculate how much a player needs to call."""
+        if who == "player":
+            return max(0, self.opponent_chips_in - self.player_chips_in)
+        elif who == "opponent":
+            return max(0, self.player_chips_in - self.opponent_chips_in)
+        return 0
+    
+    def reset(self):
+        """Reset pot for new hand."""
+        self.pot_sum = 0
+        self.last_raise = 0
+        self.player_chips_in = 0
+        self.opponent_chips_in = 0
+    
+    def get_total(self):
+        """Get total pot amount."""
+        return self.pot_sum 
+
+        
+
+
+
+
+        
 
 #class for card objects
 class Card:
@@ -206,108 +226,4 @@ def hand_type(hand):
 
     return "High Card", max_rank
 
-
-##test four
-'''
-#four of a kind, 5th spot irrelevant
-hand = [create_card(1), create_card(14), create_card(27), create_card(40), create_card(2)]
-print(hand_type(hand))
-#four of a kind, 4th spot irrelevant
-hand = [create_card(1), create_card(14), create_card(27), create_card(2), create_card(40)]
-print(hand_type(hand))
-#four of a kind, 3th spot irrelevant
-hand = [create_card(1), create_card(14), create_card(2), create_card(27), create_card(40)]
-print(hand_type(hand))
-#four of a kind, 2th spot irrelevant
-hand = [create_card(1), create_card(2), create_card(14), create_card(27), create_card(40)]
-print(hand_type(hand))
-#four of a kind, 1th spot irrelevant
-hand = [create_card(2), create_card(1), create_card(14), create_card(27), create_card(40)]
-print(hand_type(hand))
-'''
-##test three
-'''
-#three, 4th 5th irr
-hand = [create_card(1), create_card(14), create_card(27), create_card(3), create_card(2)]
-print(hand_type(hand))
-#three, 3th 5th irr
-hand = [create_card(1), create_card(14), create_card(2), create_card(27), create_card(3)]
-print(hand_type(hand))
-#three, 3th 4th irr
-hand = [create_card(1), create_card(14), create_card(2), create_card(3), create_card(27)]
-print(hand_type(hand))
-#three, 2th 5th irr
-hand = [create_card(1), create_card(2), create_card(14), create_card(27), create_card(3)]
-print(hand_type(hand))
-#three, 2th 4th irr
-hand = [create_card(1), create_card(2), create_card(14), create_card(3), create_card(27)]
-print(hand_type(hand))
-#three, 2th 3th irr
-hand = [create_card(1), create_card(2), create_card(3), create_card(14), create_card(27)]
-print(hand_type(hand))
-#three, 1th 5th irr
-hand = [create_card(2), create_card(1), create_card(14), create_card(27), create_card(3)]
-print(hand_type(hand))
-#three, 1th 4th irr -----CURR FULL HOUSE
-hand = [create_card(2), create_card(1), create_card(14), create_card(3), create_card(27)]
-print(hand_type(hand))
-#three, 1th 3th irr -----CURR FULL HOUSE
-hand = [create_card(2), create_card(1), create_card(3), create_card(14), create_card(27)]
-print(hand_type(hand))
-#three, 1th 2th irr
-hand = [create_card(2), create_card(3), create_card(1), create_card(14), create_card(27)]
-print(hand_type(hand))
-
-##test FULL HOUSE
-
-#house, 4th 5th pair
-hand = [create_card(1), create_card(14), create_card(27), create_card(15), create_card(2)]
-print(hand_type(hand))
-#house, 3th 5th pair
-hand = [create_card(1), create_card(14), create_card(2), create_card(27), create_card(15)]
-print(hand_type(hand))
-#house, 3th 4th pair
-hand = [create_card(1), create_card(14), create_card(2), create_card(15), create_card(27)]
-print(hand_type(hand))
-#house, 2th 5th pair
-hand = [create_card(1), create_card(2), create_card(14), create_card(27), create_card(15)]
-print(hand_type(hand))
-#house, 2th 4th pair
-hand = [create_card(1), create_card(2), create_card(14), create_card(15), create_card(27)]
-print(hand_type(hand))
-#house, 2th 3th pair
-hand = [create_card(1), create_card(2), create_card(15), create_card(14), create_card(27)]
-print(hand_type(hand))
-#house, 1th 5th pair
-hand = [create_card(2), create_card(1), create_card(14), create_card(27), create_card(15)]
-print(hand_type(hand))
-#house, 1th 4th pair
-hand = [create_card(2), create_card(1), create_card(14), create_card(15), create_card(27)]
-print(hand_type(hand))
-#house, 1th 3th pair
-hand = [create_card(2), create_card(1), create_card(15), create_card(14), create_card(27)]
-print(hand_type(hand))
-#house, 1th 2th pair
-hand = [create_card(2), create_card(15), create_card(1), create_card(14), create_card(27)]
-print(hand_type(hand))
-'''
-
-#pair, 1th 4th pair
-hand = [create_card(2), create_card(1), create_card(3), create_card(15), create_card(4)]
-print(hand_type(hand))
-#two pair, 1th 3th pair, 2nd, 5th pair
-hand = [create_card(2), create_card(1), create_card(15), create_card(3), create_card(27)]
-print(hand_type(hand))
-#royal flush
-hand = [create_card(14), create_card(13), create_card(12), create_card(11), create_card(10)]
-print(hand_type(hand))
-#straight flush
-hand = [create_card(2), create_card(3), create_card(4), create_card(5), create_card(6)]
-print(hand_type(hand))
-#flush
-hand = [create_card(2), create_card(11), create_card(10), create_card(7), create_card(4)]
-print(hand_type(hand))
-#straight
-hand = [create_card(2), create_card(16), create_card(30), create_card(5), create_card(6)]
-print(hand_type(hand))
 

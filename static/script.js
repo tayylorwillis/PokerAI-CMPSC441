@@ -1,7 +1,6 @@
 const raiseButton = document.getElementById('raiseButton');
 const holdButton = document.getElementById('holdButton');
 const foldButton = document.getElementById('foldButton');
-const newHandButton = document.getElementById('newHandButton');
 const overlay = document.getElementById('overlay');
 const confirmRaise = document.getElementById('confirmRaise');
 const raiseInput = document.getElementById('raiseInput');
@@ -29,8 +28,6 @@ function renderCards(container, cards, size = 'md') {
     container.innerHTML = '';
     cards.forEach(card => container.appendChild(createCardImg(card, size)));
 }
-
-
 
 function updateText(id, value) {
     const el = document.getElementById(id);
@@ -75,6 +72,11 @@ async function sendAction(action, amount = 0) {
         method: 'POST',
         body: JSON.stringify({ action, amount })
     });
+    renderState(state);
+}
+
+async function startNewHand() {
+    const state = await fetchJson('/api/new-hand', { method: 'POST' });
     renderState(state);
 }
 

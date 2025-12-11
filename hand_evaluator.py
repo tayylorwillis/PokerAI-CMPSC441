@@ -41,10 +41,9 @@ class HandEvaluator:
         has_four, four_rank = HandEvaluator._has_four_of_kind(rank_counts)
 
         # determine hand type
-        if is_flush and is_straight and sorted(ranks) == [10, 11, 12, 13, 14]:
-            return "Royal Flush", 14
-
         if is_flush and is_straight:
+            if sorted(ranks) == [10, 11, 12, 13, 14]:
+                return "Royal Flush", 10000
             return "Straight Flush", max_rank
 
         if has_four:
@@ -79,13 +78,14 @@ class HandEvaluator:
 
     @staticmethod
     def _is_straight(ranks, max_rank):
-        """Check if cards form a straight."""
+        """Check if cards form a straight, including wheel (A-2-3-4-5)."""
+        sorted_ranks = sorted(ranks)
         if (max_rank - 1 in ranks and
-            max_rank - 2 in ranks and
-            max_rank - 3 in ranks and
-            max_rank - 4 in ranks):
+                max_rank - 2 in ranks and
+                max_rank - 3 in ranks and
+                max_rank - 4 in ranks):
             return True
-        if sorted(ranks) == [2, 3, 4, 5, 14]:
+        if sorted_ranks == [2, 3, 4, 5, 14]:
             return True
         return False
 
@@ -93,7 +93,7 @@ class HandEvaluator:
     def _count_ranks(hand):
         """
         Count occurrences of each rank.
-        Returns a list where index represents rank-2 and value is count.
+        Returns a list where index represents rank-2 and value is count (for ranks 2-14).
         """
         rank_counts = [0] * 13
         for card in hand:
@@ -120,7 +120,6 @@ class HandEvaluator:
     @staticmethod
     def _has_pair(rank_counts):
         """Check for a pair."""
-        pair_rank = 0
         for rank, count in enumerate(rank_counts, start=2):
             if count == 2:
                 pair_rank = rank
@@ -131,7 +130,6 @@ class HandEvaluator:
     @staticmethod
     def _has_two_pair(rank_counts, first_pair_rank):
         """Check for two pair."""
-        second_pair = 0
         for rank, count in enumerate(rank_counts, start=2):
             if count == 2 and rank != first_pair_rank:
                 second_pair = rank

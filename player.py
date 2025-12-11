@@ -22,13 +22,25 @@ class Player:
         """Check if player has enough money to bet"""
         return self.money >= amount
 
-    def place_bet(self, amount):
+    def place_bet(self, amount, pot=None):
         """Place a bet (deduct from money, add to current_bet)"""
         if amount > self.money:
             amount = self.money  # All-in
         self.money -= amount
         self.current_bet += amount
+        # Add to pot if pot instance is provided
+        if pot:
+            who = "opponent" if self.is_bot else "player"
+            pot.add_bet(amount, who)
         return amount
+
+    def call(self, pot):
+        """Call the current bet (match opponent's bet)."""
+        who = "opponent" if self.is_bot else "player"
+        call_amt = pot.get_call_amount(who)
+        if call_amt > 0:
+            return self.place_bet(call_amt, pot)
+        return 0
 
     def win_pot(self, pot_amount):
         """Add winnings to player's money"""
