@@ -225,8 +225,12 @@ def all_players_held_or_folded(state):
     return player_done and opponent_done and gemini_done
 
 
-def process_ai_turns_in_order(state):
-    """Always act in order: human already acted -> opponent bot -> Gemini."""
+def process_ai_turns_in_order(state, run_gemini: bool = True):
+    """Always act in order: human already acted -> opponent bot -> Gemini.
+
+    The `run_gemini` flag gates calling the Gemini API to avoid unnecessary
+    calls. Set to True only when it's the bot's turn after a player action
+    that advances the round (e.g., hold or raise)."""
     opponent = state["opponent"]
     gemini_bot = state.get("gemini_bot")
 
@@ -236,7 +240,7 @@ def process_ai_turns_in_order(state):
         process_ai_decision(opponent, "opponent", state, highest_bet)
         highest_bet = get_highest_bet(state)
 
-    if gemini_bot and hasattr(gemini_bot, 'decide_action') and not state.get("gemini_held"):
+    if run_gemini and gemini_bot and hasattr(gemini_bot, 'decide_action') and not state.get("gemini_held"):
         process_ai_decision(gemini_bot, "gemini", state, highest_bet)
 
 def process_ai_decision(ai_player, ai_name, state, _highest_bet):
@@ -324,7 +328,8 @@ def api_action():
         GAME_STATE["player_held"] = False
         GAME_STATE["opponent_held"] = False
         GAME_STATE["gemini_held"] = False
-        process_ai_turns_in_order(GAME_STATE)
+        # After a player raise, allow bots to act; include Gemini
+        process_ai_turns_in_order(GAME_STATE, run_gemini=True)
             
     elif action == "call":
         highest_bet = get_highest_bet(GAME_STATE)
@@ -333,10 +338,12 @@ def api_action():
             call_amt = player.place_bet(min(call_needed, player.money))
             GAME_STATE["pot"] += call_amt
         GAME_STATE["player_held"] = True
+        # Do not immediately trigger Gemini on player call; wait for hold/raise
         
     elif action == "fold":
         player.is_folded = True
         GAME_STATE["player_held"] = True
+        # Folding ends player's participation; do not trigger Gemini here
         
     elif action == "hold":
         highest_bet = get_highest_bet(GAME_STATE)
@@ -344,7 +351,8 @@ def api_action():
             return jsonify(serialize_state(GAME_STATE, reveal_opponent=False))
         
         GAME_STATE["player_held"] = True
-        process_ai_turns_in_order(GAME_STATE)
+        # After player holds (and is matched), let bots act; include Gemini
+        process_ai_turns_in_order(GAME_STATE, run_gemini=True)
     
     if all_players_held_or_folded(GAME_STATE):
         winner, _, _, _ = evaluate_winner(GAME_STATE)

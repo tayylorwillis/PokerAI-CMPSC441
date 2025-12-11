@@ -164,26 +164,38 @@ INSTRUCTIONS:
 3. If raising, specify an integer chip amount (no explicit maximum; stay within stack)
 4. Provide brief reasoning
 5. Respond ONLY with JSON in this exact format:
-{"action": "call/raise/fold", "amount": 50, "reasoning": "your reasoning", "confidence": 0.8}
+{{"action": "call/raise/fold", "amount": 50, "reasoning": "your reasoning", "confidence": 0.8}}
 
 JSON RESPONSE:"""
         return prompt
 
     def _call_gemini(self, prompt: str) -> str:
-        """Call Gemini API."""
-        try:
-            print(f"Sending request to Gemini ({self.model_name})...")
-
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt
-            )
-            response_text = response.text.strip()
-            print(f"✅ Received response from Gemini: {response_text}")
-            return response_text
-
-        except Exception as e:
-            raise Exception(f"Gemini API call failed: {e}")
+        """Call Gemini API with basic retry/backoff on overload."""
+        import time
+        max_retries = 3
+        backoff = 1.0
+        last_err = None
+        for attempt in range(1, max_retries + 1):
+            try:
+                print(f"Sending request to Gemini ({self.model_name})... attempt {attempt}")
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt
+                )
+                response_text = response.text.strip()
+                print(f"✅ Received response from Gemini: {response_text}")
+                return response_text
+            except Exception as e:
+                last_err = e
+                # Detect overload/unavailable and back off
+                msg = str(e)
+                if "503" in msg or "UNAVAILABLE" in msg or "overloaded" in msg:
+                    time.sleep(backoff)
+                    backoff *= 2
+                    continue
+                # Other errors: do not retry
+                break
+        raise Exception(f"Gemini API call failed after retries: {last_err}")
 
     def _parse_response(self, response_text: str) -> Dict:
         """Parse Gemini response to extract JSON decision."""
