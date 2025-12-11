@@ -299,7 +299,6 @@ def check_gemini_setup():
     """
     if 'GEMINI_API_KEY' not in os.environ:
         return False, "GEMINI_API_KEY not found in environment variables"
-
     try:
         client = genai.Client()
         return True, "Gemini API is properly configured"
